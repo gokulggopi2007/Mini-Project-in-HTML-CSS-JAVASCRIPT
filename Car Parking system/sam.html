@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SmartPark - Car Parking System</title>
+  <style>
+    :root {
+      --primary: #1e3a8a;
+      --success: #16a34a;
+      --danger: #dc2626;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: linear-gradient(135deg, #f0f9ff, #e0f2fe);
+      color: #1e2937;
+      min-height: 100vh;
+    }
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+    header {
+      background: var(--primary);
+      color: white;
+      padding: 20px;
+      border-radius: 12px;
+      text-align: center;
+      margin-bottom: 20px;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    }
+    .dashboard {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+    }
+    @media (max-width: 768px) {
+      .dashboard { grid-template-columns: 1fr; }
+    }
+    .card {
+      background: white;
+      border-radius: 12px;
+      padding: 20px;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    }
+    h2 { margin-bottom: 15px; color: var(--primary); }
+    input, button {
+      padding: 12px;
+      margin: 8px 0;
+      border: 1px solid #cbd5e1;
+      border-radius: 8px;
+      font-size: 16px;
+    }
+    button {
+      background: var(--primary);
+      color: white;
+      cursor: pointer;
+      transition: 0.3s;
+    }
+    button:hover { background: #1e40af; }
+    .btn-success { background: var(--success); }
+    .btn-danger { background: var(--danger); }
+
+    .slots {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+      gap: 12px;
+      margin-top: 15px;
+    }
+    .slot {
+      height: 90px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: bold;
+      color: white;
+      position: relative;
+    }
+    .slot.empty {
+      background: #86efac;
+      color: #166534;
+    }
+    .slot.occupied {
+      background: #f87171;
+      color: white;
+    }
+    .car-info {
+      font-size: 13px;
+      text-align: center;
+      margin-top: 5px;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 15px;
+    }
+    th, td {
+      padding: 12px;
+      text-align: left;
+      border-bottom: 1px solid #e2e8f0;
+    }
+    th { background: #f1f5f9; }
+    .status-bar {
+      display: flex;
+      justify-content: space-between;
+      background: #f8fafc;
+      padding: 15px;
+      border-radius: 10px;
+      margin-bottom: 20px;
+    }
+    .toast {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      background: var(--success);
+      color: white;
+      padding: 15px 20px;
+      border-radius: 8px;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+      display: none;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>🚗 SmartPark</h1>
+      <p>Intelligent Car Parking Management System</p>
+    </header>
+
+    <div class="status-bar">
+      <div><strong>Total Slots:</strong> <span id="totalSlots">100</span></div>
+      <div><strong>Occupied:</strong> <span id="occupied">0</span></div>
+      <div><strong>Available:</strong> <span id="available">100</span></div>
+      <div><strong>Occupancy:</strong> <span id="occupancy">0%</span></div>
+    </div>
+
+    <div class="dashboard">
+      <!-- Park Car -->
+      <div class="card">
+        <h2>Park a Car</h2>
+        <input type="text" id="carNumber" placeholder="Enter Car Number (e.g. TN07AB1234)" style="width:100%;">
+        <button onclick="parkCar()" style="width:100%;">🚗 Park Car</button>
+      </div>
+
+      <!-- Exit Car -->
+      <div class="card">
+        <h2>Exit Car</h2>
+        <input type="text" id="exitCarNumber" placeholder="Enter Car Number to Exit" style="width:100%;">
+        <button onclick="exitCar()" class="btn-danger" style="width:100%;">Exit Car & Pay</button>
+      </div>
+    </div>
+
+    <!-- Parking Slots Visualization -->
+    <div class="card">
+      <h2>Parking Slots (Visual)</h2>
+      <div id="slotsGrid" class="slots"></div>
+    </div>
+
+    <!-- Currently Parked Cars -->
+    <div class="card">
+      <h2>Currently Parked Cars</h2>
+      <input type="text" id="searchInput" placeholder="Search by Car Number" onkeyup="searchCar()" style="width:100%;">
+      <table id="parkedTable">
+        <thead>
+          <tr>
+            <th>Slot</th>
+            <th>Car Number</th>
+            <th>Entry Time</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody id="tableBody"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="toast" id="toast">Success message</div>
+
+  <script>
+    const MAX_SLOTS = 100;
+    let parkedCars = JSON.parse(localStorage.getItem('parkedCars')) || [];
+
+    function saveToLocal() {
+      localStorage.setItem('parkedCars', JSON.stringify(parkedCars));
+    }
+
+    function showToast(message, isError = false) {
+      const toast = document.getElementById('toast');
+      toast.textContent = message;
+      toast.style.background = isError ? '#dc2626' : '#16a34a';
+      toast.style.display = 'block';
+      setTimeout(() => { toast.style.display = 'none'; }, 3000);
+    }
+
+    function getCurrentTime() {
+      return new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' });
+    }
+
+    function calculateFee(entryTimeStr) {
+      const entry = new Date(entryTimeStr);
+      const now = new Date();
+      const hours = (now - entry) / (1000 * 60 * 60);
+      if (hours <= 2) return 50;
+      return Math.round(50 + (hours - 2) * 20);
+    }
+
+    function renderSlots() {
+      const grid = document.getElementById('slotsGrid');
+      grid.innerHTML = '';
+      for (let i = 1; i <= MAX_SLOTS; i++) {
+        const car = parkedCars.find(c => c.slot === i);
+        const slotDiv = document.createElement('div');
+        slotDiv.className = `slot ${car ? 'occupied' : 'empty'}`;
+        slotDiv.innerHTML = `
+          <div>${i}</div>
+          \( {car ? `<div class="car-info"> \){car.number}</div>` : ''}
+        `;
+        grid.appendChild(slotDiv);
+      }
+    }
+
+    function renderTable() {
+      const tbody = document.getElementById('tableBody');
+      tbody.innerHTML = '';
+
+      parkedCars.forEach((car, index) => {
+        const row = document.createElement('tr');
+        row.innerHTML = `
+          <td>${car.slot}</td>
+          <td><strong>${car.number}</strong></td>
+          <td>${car.entryTime}</td>
+          <td><button onclick="exitCarByIndex(${index})" class="btn-danger" style="padding:8px 12px;">Exit</button></td>
+        `;
+        tbody.appendChild(row);
+      });
+    }
+
+    function updateStatus() {
+      const occupied = parkedCars.length;
+      document.getElementById('occupied').textContent = occupied;
+      document.getElementById('available').textContent = MAX_SLOTS - occupied;
+      document.getElementById('occupancy').textContent = Math.round((occupied / MAX_SLOTS) * 100) + '%';
+    }
+
+    function parkCar() {
+      const carNumber = document.getElementById('carNumber').value.trim().toUpperCase();
+      if (!carNumber) {
+        showToast("Please enter car number!", true);
+        return;
+      }
+
+      if (parkedCars.find(c => c.number === carNumber)) {
+        showToast("This car is already parked!", true);
+        return;
+      }
+
+      if (parkedCars.length >= MAX_SLOTS) {
+        showToast("Parking lot is FULL!", true);
+        return;
+      }
+
+      const newCar = {
+        number: carNumber,
+        entryTime: getCurrentTime(),
+        slot: parkedCars.length + 1
+      };
+
+      parkedCars.push(newCar);
+      saveToLocal();
+      renderSlots();
+      renderTable();
+      updateStatus();
+
+      document.getElementById('carNumber').value = '';
+      showToast(`✅ Car ${carNumber} parked successfully in Slot ${newCar.slot}`);
+    }
+
+    function exitCar() {
+      const carNumber = document.getElementById('exitCarNumber').value.trim().toUpperCase();
+      if (!carNumber) return;
+
+      const index = parkedCars.findIndex(c => c.number === carNumber);
+      if (index === -1) {
+        showToast("Car not found!", true);
+        return;
+      }
+
+      exitCarByIndex(index, carNumber);
+    }
+
+    function exitCarByIndex(index, carNumber = null) {
+      const car = parkedCars[index];
+      const fee = calculateFee(car.entryTime);
+
+      const confirmMsg = `Exit Car \( {car.number}?\nFee: ₹ \){fee}\n\nProceed?`;
+      if (!confirm(confirmMsg)) return;
+
+      parkedCars.splice(index, 1);
+      saveToLocal();
+
+      renderSlots();
+      renderTable();
+      updateStatus();
+
+      showToast(`✅ Car exited. Total Fee: ₹${fee}`);
+      if (carNumber) document.getElementById('exitCarNumber').value = '';
+    }
+
+    function searchCar() {
+      const term = document.getElementById('searchInput').value.trim().toUpperCase();
+      const rows = document.querySelectorAll('#tableBody tr');
+
+      rows.forEach(row => {
+        const carNum = row.cells[1].textContent.toUpperCase();
+        row.style.display = term === '' || carNum.includes(term) ? '' : 'none';
+      });
+    }
+
+    // Initialize
+    function init() {
+      renderSlots();
+      renderTable();
+      updateStatus();
+    }
+
+    window.onload = init;
+  </script>
+</body>
+</html>
