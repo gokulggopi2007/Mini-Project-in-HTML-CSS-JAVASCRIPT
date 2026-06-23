@@ -1,0 +1,807 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Clinic Management System</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: #f0f4ff;
+      min-height: 100vh;
+      display: flex;
+    }
+
+    /* ── Sidebar ── */
+    .sidebar {
+      width: 240px;
+      background: #0F6E56;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      padding: 0;
+      flex-shrink: 0;
+    }
+
+    .sidebar-brand {
+      padding: 1.5rem 1.25rem 1.25rem;
+      border-bottom: 1px solid rgba(255,255,255,0.12);
+    }
+
+    .sidebar-brand h1 {
+      font-size: 16px;
+      font-weight: 700;
+      color: #ffffff;
+      line-height: 1.3;
+    }
+
+    .sidebar-brand p {
+      font-size: 12px;
+      color: #9FE1CB;
+      margin-top: 3px;
+    }
+
+    .sidebar-icon {
+      width: 36px;
+      height: 36px;
+      background: #1D9E75;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 10px;
+    }
+
+    .sidebar-icon svg { width: 20px; height: 20px; fill: #E1F5EE; }
+
+    nav { padding: 1rem 0; flex: 1; }
+
+    .nav-btn {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      width: 100%;
+      padding: 0.75rem 1.25rem;
+      background: transparent;
+      border: none;
+      color: #9FE1CB;
+      font-size: 14px;
+      font-family: inherit;
+      cursor: pointer;
+      text-align: left;
+      transition: background 0.15s, color 0.15s;
+      border-left: 3px solid transparent;
+    }
+
+    .nav-btn svg { width: 16px; height: 16px; fill: currentColor; flex-shrink: 0; }
+
+    .nav-btn:hover { background: rgba(255,255,255,0.08); color: #ffffff; }
+
+    .nav-btn.active {
+      background: rgba(255,255,255,0.12);
+      color: #ffffff;
+      border-left-color: #5DCAA5;
+      font-weight: 600;
+    }
+
+    .sidebar-footer {
+      padding: 1rem 1.25rem;
+      border-top: 1px solid rgba(255,255,255,0.12);
+    }
+
+    .patient-count-badge {
+      background: rgba(255,255,255,0.1);
+      border-radius: 8px;
+      padding: 0.6rem 0.75rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .patient-count-badge span:first-child { font-size: 12px; color: #9FE1CB; }
+    .patient-count-badge span:last-child { font-size: 18px; font-weight: 700; color: #ffffff; }
+
+    /* ── Main ── */
+    .main {
+      flex: 1;
+      padding: 2rem;
+      overflow-y: auto;
+    }
+
+    .page { display: none; }
+    .page.active { display: block; }
+
+    .page-header {
+      margin-bottom: 1.5rem;
+    }
+
+    .page-header h2 {
+      font-size: 22px;
+      font-weight: 700;
+      color: #0F6E56;
+    }
+
+    .page-header p {
+      font-size: 14px;
+      color: #666;
+      margin-top: 3px;
+    }
+
+    /* ── Stats row ── */
+    .stats-row {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+      gap: 12px;
+      margin-bottom: 1.5rem;
+    }
+
+    .stat-card {
+      background: #ffffff;
+      border: 1px solid #e0f0ea;
+      border-radius: 12px;
+      padding: 1rem 1.25rem;
+      text-align: center;
+    }
+
+    .stat-card .stat-num { font-size: 28px; font-weight: 700; color: #0F6E56; }
+    .stat-card .stat-label { font-size: 12px; color: #666; margin-top: 3px; }
+
+    /* ── Form Card ── */
+    .card {
+      background: #ffffff;
+      border: 1px solid #dde8e4;
+      border-radius: 14px;
+      padding: 1.5rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .card-title {
+      font-size: 15px;
+      font-weight: 700;
+      color: #085041;
+      margin-bottom: 1.25rem;
+      padding-bottom: 0.75rem;
+      border-bottom: 1px solid #e8f5f0;
+    }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 14px;
+      margin-bottom: 1.25rem;
+    }
+
+    .form-group { display: flex; flex-direction: column; gap: 5px; }
+
+    .form-group label {
+      font-size: 12px;
+      font-weight: 600;
+      color: #0F6E56;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .form-group input, .form-group select {
+      padding: 0.6rem 0.85rem;
+      border: 1.5px solid #cde8de;
+      border-radius: 8px;
+      font-size: 14px;
+      font-family: inherit;
+      color: #1e3a2f;
+      background: #f8fdfb;
+      transition: border-color 0.15s, box-shadow 0.15s;
+      outline: none;
+    }
+
+    .form-group input:focus, .form-group select:focus {
+      border-color: #1D9E75;
+      box-shadow: 0 0 0 3px rgba(29,158,117,0.12);
+      background: #ffffff;
+    }
+
+    .btn {
+      padding: 0.65rem 1.5rem;
+      border: none;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 600;
+      font-family: inherit;
+      cursor: pointer;
+      transition: background 0.15s, transform 0.1s;
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+    }
+
+    .btn svg { width: 15px; height: 15px; fill: currentColor; }
+
+    .btn-primary { background: #0F6E56; color: #ffffff; }
+    .btn-primary:hover { background: #085041; }
+    .btn-primary:active { transform: scale(0.98); }
+
+    .btn-outline {
+      background: transparent;
+      color: #0F6E56;
+      border: 1.5px solid #1D9E75;
+    }
+    .btn-outline:hover { background: #E1F5EE; }
+
+    .btn-danger { background: #A32D2D; color: #ffffff; font-size: 12px; padding: 0.4rem 0.8rem; border-radius: 6px; }
+    .btn-danger:hover { background: #791F1F; }
+
+    .btn-edit { background: #185FA5; color: #ffffff; font-size: 12px; padding: 0.4rem 0.8rem; border-radius: 6px; }
+    .btn-edit:hover { background: #0C447C; }
+
+    /* ── Toast ── */
+    .toast {
+      position: absolute;
+      top: 1.25rem;
+      right: 1.5rem;
+      padding: 0.65rem 1.1rem;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 600;
+      opacity: 0;
+      transition: opacity 0.3s;
+      pointer-events: none;
+      z-index: 100;
+    }
+    .toast.show { opacity: 1; }
+    .toast.success { background: #EAF3DE; color: #3B6D11; border: 1px solid #97C459; }
+    .toast.error   { background: #FCEBEB; color: #791F1F; border: 1px solid #F09595; }
+    .toast.info    { background: #E6F1FB; color: #0C447C; border: 1px solid #85B7EB; }
+
+    /* ── Table ── */
+    .table-wrap { overflow-x: auto; }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 14px;
+    }
+
+    thead th {
+      background: #E1F5EE;
+      color: #085041;
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.6px;
+      padding: 0.65rem 1rem;
+      text-align: left;
+    }
+
+    tbody tr { border-bottom: 1px solid #f0f8f5; transition: background 0.12s; }
+    tbody tr:hover { background: #f5fdf9; }
+
+    tbody td {
+      padding: 0.75rem 1rem;
+      color: #1e3a2f;
+      vertical-align: middle;
+    }
+
+    .empty-row td {
+      text-align: center;
+      color: #888;
+      padding: 2.5rem;
+      font-size: 15px;
+    }
+
+    .avatar {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background: #1D9E75;
+      color: #ffffff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      font-weight: 700;
+      flex-shrink: 0;
+    }
+
+    .name-cell { display: flex; align-items: center; gap: 10px; }
+
+    .disease-tag {
+      display: inline-block;
+      background: #EEEDFE;
+      color: #3C3489;
+      font-size: 11px;
+      font-weight: 600;
+      padding: 3px 10px;
+      border-radius: 99px;
+    }
+
+    /* ── Search ── */
+    .search-row {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 1.25rem;
+      flex-wrap: wrap;
+    }
+
+    .search-input-wrap {
+      display: flex;
+      flex: 1;
+      min-width: 200px;
+      border: 1.5px solid #cde8de;
+      border-radius: 8px;
+      overflow: hidden;
+      background: #f8fdfb;
+      align-items: center;
+      padding: 0 0.75rem;
+      gap: 8px;
+    }
+
+    .search-input-wrap svg { width: 16px; height: 16px; fill: #1D9E75; flex-shrink: 0; }
+
+    .search-input-wrap input {
+      border: none;
+      background: transparent;
+      padding: 0.6rem 0;
+      font-size: 14px;
+      font-family: inherit;
+      color: #1e3a2f;
+      flex: 1;
+      outline: none;
+    }
+
+    /* ── Result panel ── */
+    .result-panel {
+      background: #f8fdfb;
+      border: 1.5px solid #cde8de;
+      border-radius: 12px;
+      padding: 1.25rem;
+    }
+
+    .result-panel h3 { font-size: 15px; font-weight: 700; color: #085041; margin-bottom: 1rem; }
+
+    .detail-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+      gap: 12px;
+    }
+
+    .detail-item label { font-size: 11px; font-weight: 700; color: #0F6E56; text-transform: uppercase; letter-spacing: 0.5px; display: block; margin-bottom: 3px; }
+    .detail-item span  { font-size: 15px; color: #1e3a2f; font-weight: 600; }
+
+    /* ── Modal overlay ── */
+    .modal-overlay {
+      display: none;
+      position: absolute;
+      inset: 0;
+      background: rgba(0,0,0,0.35);
+      align-items: center;
+      justify-content: center;
+      z-index: 200;
+      min-height: 100%;
+    }
+    .modal-overlay.open { display: flex; }
+
+    .modal {
+      background: #ffffff;
+      border-radius: 14px;
+      padding: 1.5rem;
+      width: 90%;
+      max-width: 460px;
+    }
+
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1.25rem;
+    }
+
+    .modal-header h3 { font-size: 16px; font-weight: 700; color: #085041; }
+
+    .modal-close {
+      background: none;
+      border: none;
+      font-size: 20px;
+      cursor: pointer;
+      color: #666;
+      line-height: 1;
+    }
+
+    @media (max-width: 600px) {
+      .sidebar { width: 60px; }
+      .sidebar-brand h1, .sidebar-brand p, .nav-btn span, .sidebar-footer { display: none; }
+      .nav-btn { justify-content: center; padding: 0.85rem; }
+      .main { padding: 1rem; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- Sidebar -->
+<aside class="sidebar">
+  <div class="sidebar-brand">
+    <div class="sidebar-icon">
+      <svg viewBox="0 0 24 24"><path d="M12 2a10 10 0 1 0 0 20A10 10 0 0 0 12 2zm1 13h-2v-5h2v5zm0-7h-2V6h2v2z"/></svg>
+    </div>
+    <h1>Clinic Management</h1>
+    <p>System v1.0</p>
+  </div>
+
+  <nav>
+    <button class="nav-btn active" onclick="showPage('dashboard')">
+      <svg viewBox="0 0 24 24"><path d="M3 13h8V3H3v10zm0 8h8v-6H3v6zm10 0h8V11h-8v10zm0-18v6h8V3h-8z"/></svg>
+      <span>Dashboard</span>
+    </button>
+    <button class="nav-btn" onclick="showPage('add')">
+      <svg viewBox="0 0 24 24"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>
+      <span>Add Patient</span>
+    </button>
+    <button class="nav-btn" onclick="showPage('view')">
+      <svg viewBox="0 0 24 24"><path d="M4 6h16v2H4zm0 5h16v2H4zm0 5h16v2H4z"/></svg>
+      <span>All Patients</span>
+    </button>
+    <button class="nav-btn" onclick="showPage('search')">
+      <svg viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27A6.47 6.47 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16a6.47 6.47 0 0 0 4.23-1.57l.27.28v.79l5 4.99 1.49-1.49L15.5 14zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
+      <span>Search Patient</span>
+    </button>
+  </nav>
+
+  <div class="sidebar-footer">
+    <div class="patient-count-badge">
+      <span>Total Patients</span>
+      <span id="sidebarCount">0</span>
+    </div>
+  </div>
+</aside>
+
+<!-- Main Content -->
+<main class="main" style="position:relative;">
+
+  <!-- Toast -->
+  <div class="toast" id="toast"></div>
+
+  <!-- DASHBOARD -->
+  <div class="page active" id="page-dashboard">
+    <div class="page-header">
+      <h2>Dashboard</h2>
+      <p>Overview of clinic activity</p>
+    </div>
+    <div class="stats-row">
+      <div class="stat-card">
+        <div class="stat-num" id="totalCount">0</div>
+        <div class="stat-label">Total Patients</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-num" id="todayCount">0</div>
+        <div class="stat-label">Added Today</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-num" id="avgAge">—</div>
+        <div class="stat-label">Average Age</div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title">Recent Patients</div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Name</th>
+              <th>Age</th>
+              <th>Disease</th>
+            </tr>
+          </thead>
+          <tbody id="recentTable">
+            <tr class="empty-row"><td colspan="4">No patients added yet.</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ADD PATIENT -->
+  <div class="page" id="page-add">
+    <div class="page-header">
+      <h2>Add Patient</h2>
+      <p>Register a new patient record</p>
+    </div>
+    <div class="card">
+      <div class="card-title">Patient Information</div>
+      <div class="form-grid">
+        <div class="form-group">
+          <label>Patient ID</label>
+          <input type="number" id="addId" placeholder="e.g. 101" min="1"/>
+        </div>
+        <div class="form-group">
+          <label>Full Name</label>
+          <input type="text" id="addName" placeholder="e.g. Raj Kumar"/>
+        </div>
+        <div class="form-group">
+          <label>Age</label>
+          <input type="number" id="addAge" placeholder="e.g. 34" min="0" max="150"/>
+        </div>
+        <div class="form-group">
+          <label>Disease / Condition</label>
+          <input type="text" id="addDisease" placeholder="e.g. Diabetes"/>
+        </div>
+      </div>
+      <button class="btn btn-primary" onclick="addPatient()">
+        <svg viewBox="0 0 24 24"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>
+        Add Patient
+      </button>
+    </div>
+  </div>
+
+  <!-- ALL PATIENTS -->
+  <div class="page" id="page-view">
+    <div class="page-header">
+      <h2>All Patients</h2>
+      <p>Complete patient records</p>
+    </div>
+    <div class="card">
+      <div class="card-title">Patient Records</div>
+      <div class="search-row">
+        <div class="search-input-wrap">
+          <svg viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27A6.47 6.47 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16a6.47 6.47 0 0 0 4.23-1.57l.27.28v.79l5 4.99 1.49-1.49L15.5 14zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
+          <input type="text" id="filterInput" placeholder="Filter by name or disease..." oninput="renderTable()"/>
+        </div>
+        <button class="btn btn-outline" onclick="exportCSV()">Export CSV</button>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Name</th>
+              <th>Age</th>
+              <th>Disease</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="mainTable">
+            <tr class="empty-row"><td colspan="5">No patients found.</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- SEARCH -->
+  <div class="page" id="page-search">
+    <div class="page-header">
+      <h2>Search Patient</h2>
+      <p>Look up a patient by ID</p>
+    </div>
+    <div class="card">
+      <div class="card-title">Search by Patient ID</div>
+      <div class="search-row">
+        <div class="search-input-wrap" style="max-width:280px;">
+          <svg viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27A6.47 6.47 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16a6.47 6.47 0 0 0 4.23-1.57l.27.28v.79l5 4.99 1.49-1.49L15.5 14zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
+          <input type="number" id="searchId" placeholder="Enter Patient ID"/>
+        </div>
+        <button class="btn btn-primary" onclick="searchPatient()">Search</button>
+      </div>
+      <div id="searchResult"></div>
+    </div>
+  </div>
+
+  <!-- EDIT MODAL -->
+  <div class="modal-overlay" id="editModal">
+    <div class="modal">
+      <div class="modal-header">
+        <h3>Edit Patient</h3>
+        <button class="modal-close" onclick="closeModal()">&times;</button>
+      </div>
+      <div class="form-grid">
+        <div class="form-group">
+          <label>Patient ID</label>
+          <input type="number" id="editId" disabled/>
+        </div>
+        <div class="form-group">
+          <label>Full Name</label>
+          <input type="text" id="editName"/>
+        </div>
+        <div class="form-group">
+          <label>Age</label>
+          <input type="number" id="editAge" min="0" max="150"/>
+        </div>
+        <div class="form-group">
+          <label>Disease</label>
+          <input type="text" id="editDisease"/>
+        </div>
+      </div>
+      <div style="display:flex;gap:10px;margin-top:0.5rem;">
+        <button class="btn btn-primary" onclick="saveEdit()">Save Changes</button>
+        <button class="btn btn-outline" onclick="closeModal()">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+</main>
+
+<script>
+  let patients = JSON.parse(localStorage.getItem('clinic_patients') || '[]');
+  let editIndex = -1;
+  let todayAdded = parseInt(sessionStorage.getItem('todayAdded') || '0');
+
+  function save() {
+    localStorage.setItem('clinic_patients', JSON.stringify(patients));
+    updateSidebar();
+    updateDashboard();
+  }
+
+  function updateSidebar() {
+    document.getElementById('sidebarCount').textContent = patients.length;
+  }
+
+  function updateDashboard() {
+    document.getElementById('totalCount').textContent = patients.length;
+    document.getElementById('todayCount').textContent = todayAdded;
+    const ages = patients.map(p => parseInt(p.age)).filter(a => !isNaN(a));
+    document.getElementById('avgAge').textContent = ages.length
+      ? Math.round(ages.reduce((a,b) => a+b, 0) / ages.length)
+      : '—';
+    const recent = [...patients].reverse().slice(0, 5);
+    const tbody = document.getElementById('recentTable');
+    if (!recent.length) {
+      tbody.innerHTML = '<tr class="empty-row"><td colspan="4">No patients added yet.</td></tr>';
+    } else {
+      tbody.innerHTML = recent.map(p => `
+        <tr>
+          <td>#${p.id}</td>
+          <td>${p.name}</td>
+          <td>${p.age}</td>
+          <td><span class="disease-tag">${p.disease}</span></td>
+        </tr>`).join('');
+    }
+  }
+
+  function showPage(id) {
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+    document.getElementById('page-' + id).classList.add('active');
+    event.currentTarget.classList.add('active');
+    if (id === 'view') renderTable();
+    if (id === 'dashboard') updateDashboard();
+    document.getElementById('searchResult').innerHTML = '';
+  }
+
+  function showToast(msg, type='success') {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.className = 'toast show ' + type;
+    setTimeout(() => { t.className = 'toast'; }, 2500);
+  }
+
+  function initials(name) {
+    return name.split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2);
+  }
+
+  function addPatient() {
+    const id   = parseInt(document.getElementById('addId').value.trim());
+    const name = document.getElementById('addName').value.trim();
+    const age  = parseInt(document.getElementById('addAge').value.trim());
+    const dis  = document.getElementById('addDisease').value.trim();
+
+    if (!id || !name || !age || !dis) { showToast('Please fill in all fields.', 'error'); return; }
+    if (patients.find(p => p.id === id)) { showToast('Patient ID already exists!', 'error'); return; }
+    if (age < 0 || age > 150) { showToast('Please enter a valid age.', 'error'); return; }
+
+    patients.push({ id, name, age, disease: dis });
+    todayAdded++;
+    sessionStorage.setItem('todayAdded', todayAdded);
+    save();
+    showToast('Patient added successfully!');
+    document.getElementById('addId').value = '';
+    document.getElementById('addName').value = '';
+    document.getElementById('addAge').value = '';
+    document.getElementById('addDisease').value = '';
+  }
+
+  function renderTable() {
+    const filter = (document.getElementById('filterInput').value || '').toLowerCase();
+    const filtered = patients.filter(p =>
+      p.name.toLowerCase().includes(filter) ||
+      p.disease.toLowerCase().includes(filter)
+    );
+    const tbody = document.getElementById('mainTable');
+    if (!filtered.length) {
+      tbody.innerHTML = '<tr class="empty-row"><td colspan="5">No matching records found.</td></tr>';
+      return;
+    }
+    tbody.innerHTML = filtered.map((p, i) => {
+      const realIdx = patients.indexOf(p);
+      return `<tr>
+        <td>#${p.id}</td>
+        <td>
+          <div class="name-cell">
+            <div class="avatar">${initials(p.name)}</div>
+            <span>${p.name}</span>
+          </div>
+        </td>
+        <td>${p.age} yrs</td>
+        <td><span class="disease-tag">${p.disease}</span></td>
+        <td style="display:flex;gap:6px;">
+          <button class="btn btn-edit" onclick="openEdit(${realIdx})">Edit</button>
+          <button class="btn btn-danger" onclick="deletePatient(${realIdx})">Delete</button>
+        </td>
+      </tr>`;
+    }).join('');
+  }
+
+  function deletePatient(idx) {
+    if (!confirm(`Delete patient "${patients[idx].name}"?`)) return;
+    patients.splice(idx, 1);
+    save();
+    renderTable();
+    showToast('Patient deleted.', 'info');
+  }
+
+  function openEdit(idx) {
+    editIndex = idx;
+    const p = patients[idx];
+    document.getElementById('editId').value = p.id;
+    document.getElementById('editName').value = p.name;
+    document.getElementById('editAge').value = p.age;
+    document.getElementById('editDisease').value = p.disease;
+    document.getElementById('editModal').classList.add('open');
+  }
+
+  function closeModal() {
+    document.getElementById('editModal').classList.remove('open');
+    editIndex = -1;
+  }
+
+  function saveEdit() {
+    const name = document.getElementById('editName').value.trim();
+    const age  = parseInt(document.getElementById('editAge').value.trim());
+    const dis  = document.getElementById('editDisease').value.trim();
+    if (!name || !age || !dis) { showToast('All fields required.', 'error'); return; }
+    patients[editIndex].name = name;
+    patients[editIndex].age = age;
+    patients[editIndex].disease = dis;
+    save();
+    renderTable();
+    closeModal();
+    showToast('Patient updated successfully!');
+  }
+
+  function searchPatient() {
+    const id = parseInt(document.getElementById('searchId').value.trim());
+    const el = document.getElementById('searchResult');
+    if (!id) { showToast('Please enter a Patient ID.', 'error'); return; }
+    const p = patients.find(pt => pt.id === id);
+    if (!p) {
+      el.innerHTML = `<div style="background:#FCEBEB;border:1px solid #F09595;border-radius:10px;padding:1rem;color:#791F1F;font-weight:600;">
+        No patient found with ID #${id}.
+      </div>`;
+      return;
+    }
+    el.innerHTML = `<div class="result-panel">
+      <h3>Patient Found</h3>
+      <div class="detail-grid">
+        <div class="detail-item"><label>ID</label><span>#${p.id}</span></div>
+        <div class="detail-item"><label>Name</label><span>${p.name}</span></div>
+        <div class="detail-item"><label>Age</label><span>${p.age} years</span></div>
+        <div class="detail-item"><label>Disease</label><span>${p.disease}</span></div>
+      </div>
+    </div>`;
+  }
+
+  function exportCSV() {
+    if (!patients.length) { showToast('No data to export.', 'error'); return; }
+    const rows = [['ID','Name','Age','Disease'], ...patients.map(p => [p.id, p.name, p.age, p.disease])];
+    const csv = rows.map(r => r.join(',')).join('\n');
+    const a = document.createElement('a');
+    a.href = 'data:text/csv;charset=utf-8,' + encodeURIComponent(csv);
+    a.download = 'patients.csv';
+    a.click();
+    showToast('CSV exported!');
+  }
+
+  updateSidebar();
+  updateDashboard();
+</script>
+</body>
+</html>
