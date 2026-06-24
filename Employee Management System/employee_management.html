@@ -1,0 +1,530 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Employee Management System</title>
+  <style>
+    *{margin:0;padding:0;box-sizing:border-box;}
+    body{font-family:'Segoe UI',Tahoma,Geneva,Verdana,sans-serif;background:#f4f6fb;min-height:100vh;display:flex;flex-direction:column;}
+
+    /* ── Header ── */
+    header{background:linear-gradient(135deg,#1a237e 0%,#283593 60%,#3949ab 100%);color:#fff;padding:1.25rem 2rem;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;}
+    .brand{display:flex;align-items:center;gap:14px;}
+    .brand-icon{width:46px;height:46px;background:rgba(255,255,255,0.15);border:2px solid rgba(255,255,255,0.3);border-radius:12px;display:flex;align-items:center;justify-content:center;}
+    .brand-icon svg{width:26px;height:26px;fill:#fff;}
+    .brand-text h1{font-size:20px;font-weight:800;letter-spacing:0.3px;}
+    .brand-text p{font-size:12px;color:#C5CAE9;margin-top:2px;}
+    .header-stats{display:flex;gap:12px;flex-wrap:wrap;}
+    .hstat{background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.2);border-radius:10px;padding:0.5rem 1rem;text-align:center;}
+    .hstat-num{font-size:22px;font-weight:800;line-height:1;}
+    .hstat-label{font-size:11px;color:#C5CAE9;margin-top:2px;font-weight:600;}
+    .hstat-num.tc{color:#fff;}
+    .hstat-num.avg{color:#90CAF9;}
+    .hstat-num.top{color:#A5D6A7;}
+
+    /* ── Sidebar + Layout ── */
+    .app-body{display:flex;flex:1;}
+    .sidebar{width:220px;background:#fff;border-right:1.5px solid #e8eaf6;padding:1.25rem 0;display:flex;flex-direction:column;gap:4px;flex-shrink:0;}
+    .nav-btn{display:flex;align-items:center;gap:11px;width:100%;padding:0.75rem 1.25rem;background:none;border:none;border-left:3px solid transparent;color:#555;font-size:14px;font-weight:600;font-family:inherit;cursor:pointer;text-align:left;transition:background 0.14s,color 0.14s,border-color 0.14s;}
+    .nav-btn svg{width:17px;height:17px;fill:currentColor;flex-shrink:0;}
+    .nav-btn:hover{background:#e8eaf6;color:#1a237e;}
+    .nav-btn.active{background:#e8eaf6;color:#1a237e;border-left-color:#3949ab;font-weight:700;}
+    .sidebar-footer{margin-top:auto;padding:1rem 1.25rem;border-top:1px solid #e8eaf6;}
+    .emp-pill{background:#e8eaf6;border-radius:8px;padding:0.6rem 0.75rem;display:flex;justify-content:space-between;align-items:center;}
+    .emp-pill span:first-child{font-size:12px;color:#555;font-weight:600;}
+    .emp-pill span:last-child{font-size:20px;font-weight:800;color:#1a237e;}
+
+    /* ── Main ── */
+    .main{flex:1;padding:2rem;overflow-y:auto;}
+    .page{display:none;}
+    .page.active{display:block;}
+    .section-head{margin-bottom:1.5rem;}
+    .section-head h2{font-size:20px;font-weight:800;color:#1a237e;}
+    .section-head p{font-size:14px;color:#777;margin-top:3px;}
+
+    /* ── Toast ── */
+    .toast{position:fixed;top:1.25rem;right:1.5rem;padding:0.65rem 1.1rem;border-radius:8px;font-size:13px;font-weight:700;opacity:0;transition:opacity 0.3s;pointer-events:none;z-index:999;display:flex;align-items:center;gap:8px;}
+    .toast svg{width:15px;height:15px;fill:currentColor;flex-shrink:0;}
+    .toast.show{opacity:1;}
+    .toast.success{background:#E8F5E9;color:#2E7D32;border:1px solid #A5D6A7;}
+    .toast.error{background:#FFEBEE;color:#C62828;border:1px solid #EF9A9A;}
+    .toast.info{background:#E3F2FD;color:#1565C0;border:1px solid #90CAF9;}
+
+    /* ── Stats ── */
+    .stats-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-bottom:1.5rem;}
+    .stat-card{background:#fff;border:1.5px solid #e8eaf6;border-radius:12px;padding:1rem 1.25rem;text-align:center;}
+    .stat-card .num{font-size:28px;font-weight:800;margin-bottom:4px;}
+    .stat-card .lbl{font-size:12px;color:#777;font-weight:600;}
+    .stat-card.tc .num{color:#1a237e;}
+    .stat-card.av .num{color:#2E7D32;}
+    .stat-card.hi .num{color:#E65100;}
+    .stat-card.lo .num{color:#1565C0;}
+
+    /* ── Card ── */
+    .card{background:#fff;border:1.5px solid #e8eaf6;border-radius:14px;padding:1.5rem;margin-bottom:1.5rem;}
+    .card-title{font-size:14px;font-weight:700;color:#1a237e;margin-bottom:1.25rem;padding-bottom:0.75rem;border-bottom:1px solid #e8eaf6;display:flex;align-items:center;gap:8px;}
+    .card-title svg{width:16px;height:16px;fill:#3949ab;}
+
+    /* ── Form ── */
+    .form-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:14px;margin-bottom:1.25rem;}
+    .form-group{display:flex;flex-direction:column;gap:5px;}
+    .form-group label{font-size:12px;font-weight:700;color:#3949ab;text-transform:uppercase;letter-spacing:0.5px;}
+    .form-group input{padding:0.6rem 0.85rem;border:1.5px solid #C5CAE9;border-radius:8px;font-size:14px;font-family:inherit;color:#1a237e;background:#f8f9ff;outline:none;transition:border-color 0.15s,box-shadow 0.15s;}
+    .form-group input:focus{border-color:#3949ab;box-shadow:0 0 0 3px rgba(57,73,171,0.1);background:#fff;}
+    .btn{padding:0.65rem 1.5rem;border:none;border-radius:8px;font-size:14px;font-weight:700;font-family:inherit;cursor:pointer;transition:background 0.15s,transform 0.1s;display:inline-flex;align-items:center;gap:7px;}
+    .btn svg{width:15px;height:15px;fill:currentColor;}
+    .btn:active{transform:scale(0.97);}
+    .btn-primary{background:#1a237e;color:#fff;}
+    .btn-primary:hover{background:#283593;}
+    .btn-outline{background:transparent;color:#1a237e;border:1.5px solid #3949ab;}
+    .btn-outline:hover{background:#e8eaf6;}
+    .btn-danger{background:#C62828;color:#fff;}
+    .btn-danger:hover{background:#B71C1C;}
+    .btn-sm{padding:0.38rem 0.85rem;font-size:12px;border-radius:6px;}
+
+    /* ── Table ── */
+    .search-bar{display:flex;gap:10px;margin-bottom:1.25rem;flex-wrap:wrap;}
+    .search-wrap{flex:1;min-width:200px;display:flex;align-items:center;gap:8px;border:1.5px solid #C5CAE9;border-radius:8px;padding:0 0.85rem;background:#f8f9ff;}
+    .search-wrap svg{width:16px;height:16px;fill:#3949ab;flex-shrink:0;}
+    .search-wrap input{border:none;background:transparent;padding:0.6rem 0;font-size:14px;font-family:inherit;color:#1a237e;flex:1;outline:none;}
+    .table-wrap{overflow-x:auto;}
+    table{width:100%;border-collapse:collapse;font-size:14px;}
+    thead th{background:#e8eaf6;color:#1a237e;font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:0.6px;padding:0.7rem 1rem;text-align:left;}
+    thead th:first-child{border-radius:8px 0 0 0;}
+    thead th:last-child{border-radius:0 8px 0 0;}
+    tbody tr{border-bottom:1px solid #f0f2ff;transition:background 0.12s;}
+    tbody tr:hover{background:#f8f9ff;}
+    tbody td{padding:0.8rem 1rem;color:#1e2a5e;vertical-align:middle;}
+    .empty-row td{text-align:center;color:#999;padding:2.5rem;font-size:15px;}
+    .avatar{width:34px;height:34px;border-radius:50%;background:#3949ab;color:#fff;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;flex-shrink:0;}
+    .name-cell{display:flex;align-items:center;gap:10px;}
+    .salary-chip{display:inline-block;background:#E8F5E9;color:#2E7D32;font-size:12px;font-weight:700;padding:3px 10px;border-radius:99px;}
+    .id-chip{display:inline-block;background:#e8eaf6;color:#1a237e;font-size:12px;font-weight:700;padding:3px 10px;border-radius:99px;}
+
+    /* ── Search result ── */
+    .result-box{background:#f8f9ff;border:1.5px solid #C5CAE9;border-radius:12px;padding:1.25rem;}
+    .result-box h3{font-size:15px;font-weight:800;color:#1a237e;margin-bottom:1rem;}
+    .detail-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;}
+    .detail-item label{font-size:11px;font-weight:800;color:#3949ab;text-transform:uppercase;letter-spacing:0.5px;display:block;margin-bottom:3px;}
+    .detail-item span{font-size:16px;font-weight:700;color:#1a237e;}
+
+    /* ── Modal ── */
+    .modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.4);align-items:center;justify-content:center;z-index:500;}
+    .modal-overlay.open{display:flex;}
+    .modal{background:#fff;border-radius:14px;padding:1.5rem;width:90%;max-width:440px;}
+    .modal-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:1.25rem;}
+    .modal-header h3{font-size:16px;font-weight:800;color:#1a237e;}
+    .modal-close{background:none;border:none;font-size:22px;cursor:pointer;color:#888;line-height:1;}
+    .modal-footer{display:flex;gap:10px;margin-top:1rem;}
+
+    @media(max-width:640px){
+      .app-body{flex-direction:column;}
+      .sidebar{width:100%;flex-direction:row;padding:0.5rem;border-right:none;border-bottom:1.5px solid #e8eaf6;overflow-x:auto;}
+      .nav-btn{border-left:none;border-bottom:3px solid transparent;padding:0.6rem 0.9rem;white-space:nowrap;}
+      .nav-btn.active{border-left-color:transparent;border-bottom-color:#3949ab;background:#e8eaf6;}
+      .sidebar-footer{display:none;}
+      header{flex-direction:column;align-items:flex-start;}
+    }
+  </style>
+</head>
+<body>
+
+<div class="toast" id="toast">
+  <svg viewBox="0 0 24 24" id="toastIcon"></svg>
+  <span id="toastMsg"></span>
+</div>
+
+<!-- Header -->
+<header>
+  <div class="brand">
+    <div class="brand-icon">
+      <svg viewBox="0 0 24 24"><path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/></svg>
+    </div>
+    <div class="brand-text">
+      <h1>Employee Management System</h1>
+      <p>Manage your workforce efficiently</p>
+    </div>
+  </div>
+  <div class="header-stats">
+    <div class="hstat"><div class="hstat-num tc" id="hTotal">0</div><div class="hstat-label">Employees</div></div>
+    <div class="hstat"><div class="hstat-num avg" id="hAvg">₹0</div><div class="hstat-label">Avg Salary</div></div>
+    <div class="hstat"><div class="hstat-num top" id="hTop">₹0</div><div class="hstat-label">Highest Salary</div></div>
+  </div>
+</header>
+
+<div class="app-body">
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <button class="nav-btn active" onclick="showPage('dashboard',this)">
+      <svg viewBox="0 0 24 24"><path d="M3 13h8V3H3v10zm0 8h8v-6H3v6zm10 0h8V11h-8v10zm0-18v6h8V3h-8z"/></svg>
+      Dashboard
+    </button>
+    <button class="nav-btn" onclick="showPage('add',this)">
+      <svg viewBox="0 0 24 24"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>
+      Add Employee
+    </button>
+    <button class="nav-btn" onclick="showPage('view',this)">
+      <svg viewBox="0 0 24 24"><path d="M4 6h16v2H4zm0 5h16v2H4zm0 5h16v2H4z"/></svg>
+      View Employees
+    </button>
+    <button class="nav-btn" onclick="showPage('search',this)">
+      <svg viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27A6.47 6.47 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16a6.47 6.47 0 0 0 4.23-1.57l.27.28v.79l5 4.99 1.49-1.49L15.5 14zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
+      Search
+    </button>
+    <div class="sidebar-footer">
+      <div class="emp-pill">
+        <span>Total Employees</span>
+        <span id="sidebarCount">0</span>
+      </div>
+    </div>
+  </aside>
+
+  <!-- Main Content -->
+  <main class="main">
+
+    <!-- DASHBOARD -->
+    <div class="page active" id="page-dashboard">
+      <div class="section-head">
+        <h2>Dashboard</h2>
+        <p>Overview of your workforce</p>
+      </div>
+      <div class="stats-row">
+        <div class="stat-card tc"><div class="num" id="dTotal">0</div><div class="lbl">Total Employees</div></div>
+        <div class="stat-card av"><div class="num" id="dAvg">₹0</div><div class="lbl">Average Salary</div></div>
+        <div class="stat-card hi"><div class="num" id="dHigh">₹0</div><div class="lbl">Highest Salary</div></div>
+        <div class="stat-card lo"><div class="num" id="dLow">₹0</div><div class="lbl">Lowest Salary</div></div>
+      </div>
+      <div class="card">
+        <div class="card-title">
+          <svg viewBox="0 0 24 24"><path d="M3 13h8V3H3v10zm0 8h8v-6H3v6zm10 0h8V11h-8v10zm0-18v6h8V3h-8z"/></svg>
+          Recent Employees
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>ID</th><th>Name</th><th>Salary</th></tr></thead>
+            <tbody id="recentTbody">
+              <tr class="empty-row"><td colspan="3">No employees added yet.</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ADD EMPLOYEE -->
+    <div class="page" id="page-add">
+      <div class="section-head">
+        <h2>Add Employee</h2>
+        <p>Register a new employee record</p>
+      </div>
+      <div class="card">
+        <div class="card-title">
+          <svg viewBox="0 0 24 24"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>
+          Employee Information
+        </div>
+        <div class="form-grid">
+          <div class="form-group">
+            <label>Employee ID</label>
+            <input type="number" id="addId" placeholder="e.g. 1001" min="1"/>
+          </div>
+          <div class="form-group">
+            <label>Full Name</label>
+            <input type="text" id="addName" placeholder="e.g. Arjun Sharma"/>
+          </div>
+          <div class="form-group">
+            <label>Salary (₹)</label>
+            <input type="number" id="addSalary" placeholder="e.g. 45000" min="0"/>
+          </div>
+        </div>
+        <button class="btn btn-primary" onclick="addEmployee()">
+          <svg viewBox="0 0 24 24"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>
+          Add Employee
+        </button>
+      </div>
+    </div>
+
+    <!-- VIEW EMPLOYEES -->
+    <div class="page" id="page-view">
+      <div class="section-head">
+        <h2>All Employees</h2>
+        <p>Complete employee records</p>
+      </div>
+      <div class="card">
+        <div class="card-title">
+          <svg viewBox="0 0 24 24"><path d="M4 6h16v2H4zm0 5h16v2H4zm0 5h16v2H4z"/></svg>
+          Employee Records
+        </div>
+        <div class="search-bar">
+          <div class="search-wrap">
+            <svg viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27A6.47 6.47 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16a6.47 6.47 0 0 0 4.23-1.57l.27.28v.79l5 4.99 1.49-1.49L15.5 14zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
+            <input type="text" id="filterInput" placeholder="Filter by name or ID..." oninput="renderTable()"/>
+          </div>
+          <button class="btn btn-outline" onclick="exportCSV()">
+            <svg viewBox="0 0 24 24"><path d="M19 9h-4V3H9v6H5l7 7 7-7zm-8 2V5h2v6h1.17L12 13.17 9.83 11H11zm-6 7h14v2H5z"/></svg>
+            Export CSV
+          </button>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Name</th>
+                <th>Salary</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="mainTbody">
+              <tr class="empty-row"><td colspan="4">No employees found.</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- SEARCH -->
+    <div class="page" id="page-search">
+      <div class="section-head">
+        <h2>Search Employee</h2>
+        <p>Find an employee by their ID</p>
+      </div>
+      <div class="card">
+        <div class="card-title">
+          <svg viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27A6.47 6.47 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16a6.47 6.47 0 0 0 4.23-1.57l.27.28v.79l5 4.99 1.49-1.49L15.5 14zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
+          Search by Employee ID
+        </div>
+        <div class="search-bar" style="margin-bottom:1.25rem;">
+          <div class="search-wrap" style="max-width:280px;">
+            <svg viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27A6.47 6.47 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16a6.47 6.47 0 0 0 4.23-1.57l.27.28v.79l5 4.99 1.49-1.49L15.5 14zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
+            <input type="number" id="searchId" placeholder="Enter Employee ID"/>
+          </div>
+          <button class="btn btn-primary" onclick="searchEmployee()">
+            <svg viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27A6.47 6.47 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16a6.47 6.47 0 0 0 4.23-1.57l.27.28v.79l5 4.99 1.49-1.49L15.5 14zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
+            Search
+          </button>
+        </div>
+        <div id="searchResult"></div>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<!-- Edit Modal -->
+<div class="modal-overlay" id="editModal">
+  <div class="modal">
+    <div class="modal-header">
+      <h3>Edit Employee</h3>
+      <button class="modal-close" onclick="closeModal()">&times;</button>
+    </div>
+    <div class="form-grid">
+      <div class="form-group">
+        <label>Employee ID</label>
+        <input type="number" id="editId" disabled/>
+      </div>
+      <div class="form-group">
+        <label>Full Name</label>
+        <input type="text" id="editName"/>
+      </div>
+      <div class="form-group">
+        <label>Salary (₹)</label>
+        <input type="number" id="editSalary" min="0"/>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-primary" onclick="saveEdit()">
+        <svg viewBox="0 0 24 24"><path d="M17 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14c1.1 0 2-.9 2-2V7l-4-4zm-5 16c-1.66 0-3-1.34-3-3s1.34-3 3-3 3 1.34 3 3-1.34 3-3 3zm3-10H5V5h10v4z"/></svg>
+        Save Changes
+      </button>
+      <button class="btn btn-outline" onclick="closeModal()">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  let employees = JSON.parse(localStorage.getItem('ems_employees') || '[]');
+  let editIndex = -1;
+
+  const fmt = n => '₹' + Number(n).toLocaleString('en-IN', {minimumFractionDigits:2, maximumFractionDigits:2});
+
+  const toastIcons = {
+    success:'<path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z"/>',
+    error:'<path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>',
+    info:'<path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/>',
+  };
+
+  function showToast(msg, type='success') {
+    const t = document.getElementById('toast');
+    document.getElementById('toastIcon').innerHTML = toastIcons[type] || toastIcons.info;
+    document.getElementById('toastMsg').textContent = msg;
+    t.className = 'toast show ' + type;
+    setTimeout(() => t.className = 'toast', 2600);
+  }
+
+  function initials(name) {
+    return name.trim().split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2);
+  }
+
+  function save() {
+    localStorage.setItem('ems_employees', JSON.stringify(employees));
+    updateGlobal();
+  }
+
+  function updateGlobal() {
+    const n = employees.length;
+    const salaries = employees.map(e => parseFloat(e.salary));
+    const avg = n ? salaries.reduce((a,b)=>a+b,0)/n : 0;
+    const high = n ? Math.max(...salaries) : 0;
+    const low  = n ? Math.min(...salaries) : 0;
+
+    document.getElementById('hTotal').textContent = n;
+    document.getElementById('hAvg').textContent   = fmt(avg);
+    document.getElementById('hTop').textContent   = fmt(high);
+    document.getElementById('sidebarCount').textContent = n;
+
+    document.getElementById('dTotal').textContent = n;
+    document.getElementById('dAvg').textContent   = fmt(avg);
+    document.getElementById('dHigh').textContent  = fmt(high);
+    document.getElementById('dLow').textContent   = n ? fmt(low) : '₹0';
+
+    const recent = [...employees].reverse().slice(0,5);
+    const rb = document.getElementById('recentTbody');
+    rb.innerHTML = recent.length
+      ? recent.map(e => `<tr>
+          <td><span class="id-chip">#${e.id}</span></td>
+          <td><div class="name-cell"><div class="avatar">${initials(e.name)}</div>${e.name}</div></td>
+          <td><span class="salary-chip">${fmt(e.salary)}</span></td>
+        </tr>`).join('')
+      : '<tr class="empty-row"><td colspan="3">No employees added yet.</td></tr>';
+  }
+
+  function showPage(id, btn) {
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+    document.getElementById('page-' + id).classList.add('active');
+    btn.classList.add('active');
+    if(id === 'view') renderTable();
+    if(id === 'dashboard') updateGlobal();
+    document.getElementById('searchResult').innerHTML = '';
+  }
+
+  function addEmployee() {
+    const id     = parseInt(document.getElementById('addId').value.trim());
+    const name   = document.getElementById('addName').value.trim();
+    const salary = parseFloat(document.getElementById('addSalary').value.trim());
+
+    if (!id || !name || isNaN(salary)) { showToast('Please fill in all fields.', 'error'); return; }
+    if (salary < 0) { showToast('Salary cannot be negative.', 'error'); return; }
+    if (employees.find(e => e.id === id)) { showToast('Employee ID already exists!', 'error'); return; }
+
+    employees.push({ id, name, salary });
+    save();
+    showToast('Employee added successfully!');
+    document.getElementById('addId').value = '';
+    document.getElementById('addName').value = '';
+    document.getElementById('addSalary').value = '';
+  }
+
+  function renderTable() {
+    const filter = document.getElementById('filterInput').value.toLowerCase();
+    const filtered = employees.filter(e =>
+      e.name.toLowerCase().includes(filter) ||
+      String(e.id).includes(filter)
+    );
+    const tbody = document.getElementById('mainTbody');
+    if (!filtered.length) {
+      tbody.innerHTML = '<tr class="empty-row"><td colspan="4">No matching records found.</td></tr>';
+      return;
+    }
+    tbody.innerHTML = filtered.map(e => {
+      const ri = employees.indexOf(e);
+      return `<tr>
+        <td><span class="id-chip">#${e.id}</span></td>
+        <td><div class="name-cell"><div class="avatar">${initials(e.name)}</div>${e.name}</div></td>
+        <td><span class="salary-chip">${fmt(e.salary)}</span></td>
+        <td style="display:flex;gap:6px;">
+          <button class="btn btn-primary btn-sm" onclick="openEdit(${ri})">
+            <svg viewBox="0 0 24 24" style="width:13px;height:13px;fill:#fff"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04a1 1 0 0 0 0-1.41l-2.34-2.34a1 1 0 0 0-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/></svg>
+            Edit
+          </button>
+          <button class="btn btn-danger btn-sm" onclick="deleteEmployee(${ri})">
+            <svg viewBox="0 0 24 24" style="width:13px;height:13px;fill:#fff"><path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></svg>
+            Delete
+          </button>
+        </td>
+      </tr>`;
+    }).join('');
+  }
+
+  function deleteEmployee(idx) {
+    if (!confirm(`Delete employee "${employees[idx].name}"?`)) return;
+    const name = employees[idx].name;
+    employees.splice(idx, 1);
+    save();
+    renderTable();
+    showToast(name + ' deleted successfully.', 'info');
+  }
+
+  function openEdit(idx) {
+    editIndex = idx;
+    const e = employees[idx];
+    document.getElementById('editId').value     = e.id;
+    document.getElementById('editName').value   = e.name;
+    document.getElementById('editSalary').value = e.salary;
+    document.getElementById('editModal').classList.add('open');
+  }
+
+  function closeModal() {
+    document.getElementById('editModal').classList.remove('open');
+    editIndex = -1;
+  }
+
+  function saveEdit() {
+    const name   = document.getElementById('editName').value.trim();
+    const salary = parseFloat(document.getElementById('editSalary').value.trim());
+    if (!name || isNaN(salary)) { showToast('All fields are required.', 'error'); return; }
+    if (salary < 0) { showToast('Salary cannot be negative.', 'error'); return; }
+    employees[editIndex].name   = name;
+    employees[editIndex].salary = salary;
+    save();
+    renderTable();
+    closeModal();
+    showToast('Employee updated successfully!');
+  }
+
+  function searchEmployee() {
+    const id = parseInt(document.getElementById('searchId').value.trim());
+    const el = document.getElementById('searchResult');
+    if (!id) { showToast('Please enter an Employee ID.', 'error'); return; }
+    const e = employees.find(x => x.id === id);
+    if (!e) {
+      el.innerHTML = `<div style="background:#FFEBEE;border:1px solid #EF9A9A;border-radius:10px;padding:1rem;color:#C62828;font-weight:700;">
+        No employee found with ID #${id}.
+      </div>`;
+      return;
+    }
+    el.innerHTML = `<div class="result-box">
+      <h3>Employee Found</h3>
+      <div class="detail-grid">
+        <div class="detail-item"><label>ID</label><span>#${e.id}</span></div>
+        <div class="detail-item"><label>Name</label><span>${e.name}</span></div>
+        <div class="detail-item"><label>Salary</label><span>${fmt(e.salary)}</span></div>
+      </div>
+    </div>`;
+  }
+
+  function exportCSV() {
+    if (!employees.length) { showToast('No data to export.', 'error'); return; }
+    const rows = [['ID','Name','Salary'], ...employees.map(e => [e.id, e.name, e.salary])];
+    const csv  = rows.map(r => r.join(',')).join('\n');
+    const a    = document.createElement('a');
+    a.href     = 'data:text/csv;charset=utf-8,' + encodeURIComponent(csv);
+    a.download = 'employees.csv';
+    a.click();
+    showToast('CSV exported!');
+  }
+
+  updateGlobal();
+</script>
+</body>
+</html>
