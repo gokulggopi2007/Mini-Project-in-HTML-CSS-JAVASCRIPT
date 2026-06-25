@@ -1,0 +1,714 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Event Management System</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: #f0f4ff;
+      color: #1a1a2e;
+      min-height: 100vh;
+    }
+
+    /* ── Header ── */
+    header {
+      background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+      color: white;
+      padding: 1.1rem 2rem;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      box-shadow: 0 3px 12px rgba(0,0,0,0.25);
+    }
+
+    header .logo {
+      width: 42px;
+      height: 42px;
+      background: rgba(255,255,255,0.1);
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+    }
+
+    header h1 { font-size: 20px; font-weight: 600; letter-spacing: 0.3px; }
+    header p  { font-size: 12px; color: rgba(255,255,255,0.5); margin-top: 2px; }
+
+    /* ── Container ── */
+    .container {
+      max-width: 960px;
+      margin: 2rem auto;
+      padding: 0 1.2rem;
+    }
+
+    /* ── Stats ── */
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 14px;
+      margin-bottom: 1.75rem;
+    }
+
+    .stat {
+      background: white;
+      border-radius: 14px;
+      padding: 1.1rem 1.3rem;
+      border: 1px solid #dde4f7;
+      box-shadow: 0 2px 8px rgba(99,102,241,0.07);
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .stat-icon {
+      width: 44px;
+      height: 44px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+      flex-shrink: 0;
+    }
+
+    .stat-icon.purple { background: #ede9fe; }
+    .stat-icon.blue   { background: #e0f2fe; }
+    .stat-icon.green  { background: #dcfce7; }
+
+    .stat-label { font-size: 12px; color: #888; margin-bottom: 3px; }
+    .stat-val   { font-size: 24px; font-weight: 700; color: #1a1a2e; }
+
+    /* ── Card ── */
+    .card {
+      background: white;
+      border-radius: 16px;
+      border: 1px solid #dde4f7;
+      box-shadow: 0 2px 10px rgba(99,102,241,0.08);
+      overflow: hidden;
+    }
+
+    /* ── Tabs ── */
+    .tabs {
+      display: flex;
+      background: #f7f8ff;
+      border-bottom: 1px solid #dde4f7;
+      overflow-x: auto;
+    }
+
+    .tab {
+      padding: 14px 22px;
+      font-size: 14px;
+      font-weight: 500;
+      color: #888;
+      border: none;
+      background: transparent;
+      cursor: pointer;
+      border-bottom: 2.5px solid transparent;
+      transition: all 0.2s;
+      white-space: nowrap;
+      display: flex;
+      align-items: center;
+      gap: 7px;
+    }
+
+    .tab:hover { color: #4f46e5; background: #f0f0ff; }
+
+    .tab.active {
+      color: #4f46e5;
+      border-bottom-color: #4f46e5;
+      background: white;
+    }
+
+    /* ── Panels ── */
+    .panel { display: none; padding: 1.75rem; }
+    .panel.active { display: block; }
+
+    /* ── Form ── */
+    .form-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+
+    .form-group { margin-bottom: 1rem; }
+
+    .form-group label {
+      display: block;
+      font-size: 13px;
+      font-weight: 600;
+      color: #555;
+      margin-bottom: 6px;
+    }
+
+    .form-group label span {
+      color: #ef4444;
+      margin-left: 2px;
+    }
+
+    input[type="text"],
+    input[type="number"],
+    input[type="date"] {
+      width: 100%;
+      padding: 10px 13px;
+      border: 1.5px solid #e0e4f4;
+      border-radius: 9px;
+      font-size: 14px;
+      color: #1a1a2e;
+      background: #fafbff;
+      transition: border-color 0.2s, box-shadow 0.2s;
+      outline: none;
+      font-family: inherit;
+    }
+
+    input:focus {
+      border-color: #6366f1;
+      box-shadow: 0 0 0 3px rgba(99,102,241,0.13);
+      background: white;
+    }
+
+    /* ── Buttons ── */
+    .btn {
+      padding: 10px 22px;
+      font-size: 14px;
+      font-weight: 600;
+      border-radius: 9px;
+      border: 1.5px solid #dde4f7;
+      background: white;
+      color: #1a1a2e;
+      cursor: pointer;
+      transition: all 0.18s;
+      font-family: inherit;
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+    }
+
+    .btn:hover   { background: #f0f0ff; }
+    .btn:active  { transform: scale(0.97); }
+
+    .btn.primary {
+      background: #4f46e5;
+      color: white;
+      border-color: #4f46e5;
+    }
+
+    .btn.primary:hover { background: #4338ca; }
+
+    .btn.danger {
+      background: #fff0f0;
+      color: #dc2626;
+      border-color: #fecaca;
+    }
+
+    .btn.danger:hover { background: #fee2e2; }
+
+    .btn.sm { padding: 5px 13px; font-size: 12px; }
+
+    /* ── Toast ── */
+    .toast {
+      padding: 11px 16px;
+      border-radius: 9px;
+      font-size: 13px;
+      font-weight: 500;
+      margin-bottom: 1.25rem;
+      display: none;
+      align-items: center;
+      gap: 9px;
+    }
+
+    .toast.success {
+      background: #f0fdf4;
+      color: #15803d;
+      border: 1px solid #bbf7d0;
+      display: flex;
+    }
+
+    .toast.error {
+      background: #fff0f0;
+      color: #dc2626;
+      border: 1px solid #fecaca;
+      display: flex;
+    }
+
+    /* ── Table ── */
+    .table-wrap { overflow-x: auto; }
+
+    table { width: 100%; border-collapse: collapse; font-size: 14px; }
+
+    thead tr { background: #f7f8ff; }
+
+    th {
+      text-align: left;
+      padding: 11px 14px;
+      font-size: 11px;
+      font-weight: 700;
+      color: #888;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      border-bottom: 1.5px solid #e8ecf8;
+    }
+
+    td {
+      padding: 13px 14px;
+      border-bottom: 1px solid #f0f4ff;
+      color: #1a1a2e;
+      vertical-align: middle;
+    }
+
+    tr:last-child td { border-bottom: none; }
+    tbody tr:hover td { background: #f7f8ff; }
+
+    /* ── Event avatar ── */
+    .evt-avatar {
+      width: 36px;
+      height: 36px;
+      border-radius: 9px;
+      background: linear-gradient(135deg, #6366f1, #8b5cf6);
+      color: white;
+      font-size: 13px;
+      font-weight: 700;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      margin-right: 10px;
+      vertical-align: middle;
+      flex-shrink: 0;
+    }
+
+    .name-cell { display: inline-flex; align-items: center; }
+
+    /* ── Badges ── */
+    .badge {
+      display: inline-block;
+      padding: 3px 10px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 600;
+    }
+
+    .badge.date  { background: #e0f2fe; color: #0369a1; }
+    .badge.venue { background: #fef3c7; color: #92400e; }
+
+    /* ── Empty ── */
+    .empty {
+      text-align: center;
+      padding: 3rem 1rem;
+      color: #bbb;
+    }
+
+    .empty .empty-icon { font-size: 42px; margin-bottom: 10px; }
+    .empty p { font-size: 14px; }
+
+    /* ── Search row ── */
+    .search-row {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 1.25rem;
+      align-items: flex-end;
+    }
+
+    .search-row .fg { flex: 1; }
+
+    /* ── Result card ── */
+    .result-card {
+      background: #f7f8ff;
+      border-radius: 12px;
+      border: 1px solid #dde4f7;
+      padding: 1.3rem 1.5rem;
+      margin-top: 0.5rem;
+      display: none;
+    }
+
+    .result-card .rc-head {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 14px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid #e0e4f4;
+    }
+
+    .result-card .rc-head .big-avatar {
+      width: 48px;
+      height: 48px;
+      border-radius: 12px;
+      background: linear-gradient(135deg, #6366f1, #8b5cf6);
+      color: white;
+      font-size: 18px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .result-card .rc-head h3 { font-size: 16px; font-weight: 700; color: #1a1a2e; }
+    .result-card .rc-head p  { font-size: 12px; color: #6366f1; font-weight: 500; }
+
+    .rc-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 8px 0;
+      border-bottom: 1px solid #eaedfa;
+      font-size: 14px;
+    }
+
+    .rc-row:last-child { border-bottom: none; }
+    .rc-label { color: #888; font-size: 13px; font-weight: 500; }
+    .rc-val   { font-weight: 600; color: #1a1a2e; }
+
+    /* ── Section title ── */
+    .section-title {
+      font-size: 15px;
+      font-weight: 700;
+      color: #1a1a2e;
+      margin-bottom: 1.1rem;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .section-title::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: #e8ecf8;
+    }
+
+    /* ── Delete warning ── */
+    .warn-box {
+      background: #fff7ed;
+      border: 1px solid #fed7aa;
+      border-radius: 10px;
+      padding: 12px 15px;
+      font-size: 13px;
+      color: #92400e;
+      margin-bottom: 1.25rem;
+      display: flex;
+      gap: 8px;
+      align-items: flex-start;
+    }
+
+    /* ── Responsive ── */
+    @media (max-width: 620px) {
+      .form-grid { grid-template-columns: 1fr; }
+      .stats     { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ══ Header ══ -->
+<header>
+  <div class="logo">&#127882;</div>
+  <div>
+    <h1>Event Management System</h1>
+    <p>Manage, search and track all your events</p>
+  </div>
+</header>
+
+<div class="container">
+
+  <!-- ══ Stats ══ -->
+  <div class="stats">
+    <div class="stat">
+      <div class="stat-icon purple">&#127882;</div>
+      <div>
+        <div class="stat-label">Total Events</div>
+        <div class="stat-val" id="stat-total">0</div>
+      </div>
+    </div>
+    <div class="stat">
+      <div class="stat-icon blue">&#128197;</div>
+      <div>
+        <div class="stat-label">Upcoming Events</div>
+        <div class="stat-val" id="stat-upcoming">0</div>
+      </div>
+    </div>
+    <div class="stat">
+      <div class="stat-icon green">&#128205;</div>
+      <div>
+        <div class="stat-label">Unique Venues</div>
+        <div class="stat-val" id="stat-venues">0</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ Main Card ══ -->
+  <div class="card">
+
+    <!-- Tabs -->
+    <div class="tabs">
+      <button class="tab active" onclick="switchTab('add')">&#10010; Add Event</button>
+      <button class="tab" onclick="switchTab('view')">&#128203; View All</button>
+      <button class="tab" onclick="switchTab('search')">&#128269; Search</button>
+      <button class="tab" onclick="switchTab('delete')">&#128465; Delete</button>
+    </div>
+
+    <!-- ══ ADD PANEL ══ -->
+    <div id="panel-add" class="panel active">
+      <div class="section-title">&#10010; Add New Event</div>
+      <div id="toast-add" class="toast"></div>
+      <div class="form-grid">
+        <div class="form-group">
+          <label>Event ID <span>*</span></label>
+          <input type="number" id="add-id" placeholder="e.g. 201" min="1"/>
+        </div>
+        <div class="form-group">
+          <label>Event Name <span>*</span></label>
+          <input type="text" id="add-name" placeholder="e.g. Tech Summit 2025"/>
+        </div>
+        <div class="form-group">
+          <label>Date <span>*</span></label>
+          <input type="date" id="add-date"/>
+        </div>
+        <div class="form-group">
+          <label>Venue <span>*</span></label>
+          <input type="text" id="add-venue" placeholder="e.g. Chennai Trade Centre"/>
+        </div>
+      </div>
+      <button class="btn primary" onclick="addEvent()">&#10010; Add Event</button>
+    </div>
+
+    <!-- ══ VIEW PANEL ══ -->
+    <div id="panel-view" class="panel">
+      <div class="section-title">&#128203; All Events</div>
+      <div class="table-wrap" id="evt-table-wrap">
+        <div class="empty">
+          <div class="empty-icon">&#127882;</div>
+          <p>No events added yet. Go to <strong>Add Event</strong> to get started.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ SEARCH PANEL ══ -->
+    <div id="panel-search" class="panel">
+      <div class="section-title">&#128269; Search Event</div>
+      <div id="toast-search" class="toast"></div>
+      <div class="search-row">
+        <div class="fg">
+          <label style="font-size:13px;font-weight:600;color:#555;display:block;margin-bottom:6px;">Enter Event ID</label>
+          <input type="number" id="search-id" placeholder="e.g. 201" min="1"/>
+        </div>
+        <button class="btn primary" onclick="searchEvent()">&#128269; Search</button>
+      </div>
+      <div class="result-card" id="search-result">
+        <div class="rc-head">
+          <div class="big-avatar" id="res-avatar"></div>
+          <div>
+            <h3 id="res-name"></h3>
+            <p id="res-id-label"></p>
+          </div>
+        </div>
+        <div class="rc-row">
+          <span class="rc-label">&#128197; Date</span>
+          <span class="rc-val" id="res-date"></span>
+        </div>
+        <div class="rc-row">
+          <span class="rc-label">&#128205; Venue</span>
+          <span class="rc-val" id="res-venue"></span>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ DELETE PANEL ══ -->
+    <div id="panel-delete" class="panel">
+      <div class="section-title">&#128465; Delete Event</div>
+      <div id="toast-delete" class="toast"></div>
+      <div class="warn-box">
+        &#9888; This action is <strong>&nbsp;permanent&nbsp;</strong>. The event record will be removed and cannot be recovered.
+      </div>
+      <div class="search-row">
+        <div class="fg">
+          <label style="font-size:13px;font-weight:600;color:#555;display:block;margin-bottom:6px;">Enter Event ID to Delete</label>
+          <input type="number" id="delete-id" placeholder="e.g. 201" min="1"/>
+        </div>
+        <button class="btn danger" onclick="deleteEvent()">&#128465; Delete</button>
+      </div>
+    </div>
+
+  </div><!-- /.card -->
+</div><!-- /.container -->
+
+<script>
+  let events = [];
+
+  /* ── Tab switch ── */
+  function switchTab(name) {
+    const names = ['add', 'view', 'search', 'delete'];
+    document.querySelectorAll('.tab').forEach((t, i) => {
+      t.classList.toggle('active', names[i] === name);
+    });
+    document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+    document.getElementById('panel-' + name).classList.add('active');
+    if (name === 'view') renderTable();
+  }
+
+  /* ── Toast ── */
+  function showToast(id, msg, type) {
+    const el = document.getElementById('toast-' + id);
+    el.innerHTML = (type === 'success' ? '&#10004; ' : '&#10006; ') + msg;
+    el.className = 'toast ' + type;
+    setTimeout(() => el.className = 'toast', 3200);
+  }
+
+  /* ── Stats ── */
+  function updateStats() {
+    const total    = events.length;
+    const today    = new Date(); today.setHours(0,0,0,0);
+    const upcoming = events.filter(e => new Date(e.date) >= today).length;
+    const venues   = new Set(events.map(e => e.venue.toLowerCase())).size;
+    document.getElementById('stat-total').textContent    = total;
+    document.getElementById('stat-upcoming').textContent = upcoming;
+    document.getElementById('stat-venues').textContent   = venues;
+  }
+
+  /* ── Initials ── */
+  function initials(name) {
+    return name.split(' ').map(w => w[0] || '').join('').slice(0, 2).toUpperCase();
+  }
+
+  /* ── Format date ── */
+  function formatDate(d) {
+    if (!d) return '—';
+    const dt = new Date(d);
+    return dt.toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
+  }
+
+  /* ── Is upcoming? ── */
+  function isUpcoming(d) {
+    const today = new Date(); today.setHours(0,0,0,0);
+    return new Date(d) >= today;
+  }
+
+  /* ── Render table ── */
+  function renderTable() {
+    const wrap = document.getElementById('evt-table-wrap');
+    if (!events.length) {
+      wrap.innerHTML = `<div class="empty"><div class="empty-icon">&#127882;</div><p>No events found. Add one using the <strong>Add Event</strong> tab.</p></div>`;
+      return;
+    }
+    const rows = events.map(e => `
+      <tr>
+        <td>
+          <span class="name-cell">
+            <span class="evt-avatar">${initials(e.name)}</span>
+            <span>${e.name}</span>
+          </span>
+        </td>
+        <td style="color:#888;font-size:13px;">#${e.id}</td>
+        <td><span class="badge date">&#128197; ${formatDate(e.date)}</span></td>
+        <td><span class="badge venue">&#128205; ${e.venue}</span></td>
+        <td>${isUpcoming(e.date) ? '<span style="color:#16a34a;font-size:12px;font-weight:600;">&#9679; Upcoming</span>' : '<span style="color:#aaa;font-size:12px;">Past</span>'}</td>
+        <td><button class="btn sm danger" onclick="deleteById(${e.id})">Remove</button></td>
+      </tr>
+    `).join('');
+    wrap.innerHTML = `
+      <table>
+        <thead>
+          <tr>
+            <th>Event Name</th>
+            <th>ID</th>
+            <th>Date</th>
+            <th>Venue</th>
+            <th>Status</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody>${rows}</tbody>
+      </table>
+    `;
+  }
+
+  /* ── Add Event ── */
+  function addEvent() {
+    const id    = parseInt(document.getElementById('add-id').value);
+    const name  = document.getElementById('add-name').value.trim();
+    const date  = document.getElementById('add-date').value;
+    const venue = document.getElementById('add-venue').value.trim();
+
+    if (!id || !name || !date || !venue) {
+      showToast('add', 'Please fill in all fields.', 'error');
+      return;
+    }
+    if (events.find(e => e.id === id)) {
+      showToast('add', 'Event ID already exists. Use a unique ID.', 'error');
+      return;
+    }
+
+    events.push({ id, name, date, venue });
+    document.getElementById('add-id').value    = '';
+    document.getElementById('add-name').value  = '';
+    document.getElementById('add-date').value  = '';
+    document.getElementById('add-venue').value = '';
+    updateStats();
+    showToast('add', `"${name}" has been added successfully!`, 'success');
+  }
+
+  /* ── Search Event ── */
+  function searchEvent() {
+    const id   = parseInt(document.getElementById('search-id').value);
+    const card = document.getElementById('search-result');
+
+    if (!id) {
+      showToast('search', 'Please enter a valid Event ID.', 'error');
+      card.style.display = 'none';
+      return;
+    }
+
+    const ev = events.find(e => e.id === id);
+    if (!ev) {
+      showToast('search', 'No event found with that ID.', 'error');
+      card.style.display = 'none';
+      return;
+    }
+
+    document.getElementById('res-avatar').textContent    = initials(ev.name);
+    document.getElementById('res-name').textContent      = ev.name;
+    document.getElementById('res-id-label').textContent  = 'Event ID: #' + ev.id;
+    document.getElementById('res-date').textContent      = formatDate(ev.date);
+    document.getElementById('res-venue').textContent     = ev.venue;
+    card.style.display = 'block';
+  }
+
+  /* ── Delete by ID (from table row) ── */
+  function deleteById(id) {
+    const idx = events.findIndex(e => e.id === id);
+    if (idx === -1) return;
+    events.splice(idx, 1);
+    updateStats();
+    renderTable();
+  }
+
+  /* ── Delete Event (from delete panel) ── */
+  function deleteEvent() {
+    const id  = parseInt(document.getElementById('delete-id').value);
+    if (!id) {
+      showToast('delete', 'Please enter a valid Event ID.', 'error');
+      return;
+    }
+    const idx = events.findIndex(e => e.id === id);
+    if (idx === -1) {
+      showToast('delete', 'No event found with that ID.', 'error');
+      return;
+    }
+    const name = events[idx].name;
+    events.splice(idx, 1);
+    document.getElementById('delete-id').value = '';
+    updateStats();
+    showToast('delete', `"${name}" has been deleted successfully.`, 'success');
+  }
+
+  /* ── Enter key shortcuts ── */
+  document.getElementById('add-venue').addEventListener('keydown',  e => { if (e.key === 'Enter') addEvent(); });
+  document.getElementById('search-id').addEventListener('keydown',  e => { if (e.key === 'Enter') searchEvent(); });
+  document.getElementById('delete-id').addEventListener('keydown',  e => { if (e.key === 'Enter') deleteEvent(); });
+</script>
+
+</body>
+</html>
