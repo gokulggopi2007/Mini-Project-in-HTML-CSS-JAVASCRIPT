@@ -1,0 +1,815 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Future Resume Predictor — AI Career Intelligence</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;1,300&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}
+
+:root{
+  --bg:#04060f;
+  --bg2:#080d1a;
+  --surface:rgba(255,255,255,0.04);
+  --surface2:rgba(255,255,255,0.07);
+  --border:rgba(255,255,255,0.09);
+  --border2:rgba(255,255,255,0.15);
+  --text:#f0f2ff;
+  --muted:rgba(240,242,255,0.45);
+  --muted2:rgba(240,242,255,0.25);
+  --cyan:#00e5ff;
+  --cyan2:#00b8d9;
+  --violet:#7c3aed;
+  --violet2:#a855f7;
+  --emerald:#10b981;
+  --amber:#f59e0b;
+  --rose:#f43f5e;
+  --accent:var(--cyan);
+  --glow:rgba(0,229,255,0.18);
+  --font-head:'Syne',sans-serif;
+  --font-body:'DM Sans',sans-serif;
+  --r:16px;
+  --r2:24px;
+  --trans:all 0.45s cubic-bezier(0.25,0.46,0.45,0.94);
+}
+
+html{scroll-behavior:smooth;}
+body{
+  font-family:var(--font-body);
+  background:var(--bg);
+  color:var(--text);
+  min-height:100vh;
+  overflow-x:hidden;
+  line-height:1.6;
+}
+
+/* Atmospheric background */
+.atm{position:fixed;inset:0;pointer-events:none;z-index:0;}
+.atm-orb{position:absolute;border-radius:50%;filter:blur(120px);opacity:0.12;}
+.atm-orb.a{width:700px;height:700px;background:var(--violet);top:-200px;right:-200px;}
+.atm-orb.b{width:600px;height:600px;background:var(--cyan2);bottom:-150px;left:-150px;}
+.atm-orb.c{width:400px;height:400px;background:var(--violet2);top:40%;left:40%;opacity:0.07;}
+.atm-grid{
+  position:absolute;inset:0;
+  background-image:linear-gradient(rgba(255,255,255,0.025) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,0.025) 1px,transparent 1px);
+  background-size:60px 60px;
+  mask-image:radial-gradient(ellipse 80% 60% at 50% 50%,black,transparent);
+}
+
+.wrap{position:relative;z-index:1;max-width:1100px;margin:0 auto;padding:0 1.5rem;}
+
+/* ── HERO ── */
+.hero{
+  min-height:100vh;display:flex;flex-direction:column;justify-content:center;
+  align-items:center;text-align:center;padding:6rem 1.5rem 4rem;
+  position:relative;z-index:1;
+}
+.hero-badge{
+  display:inline-flex;align-items:center;gap:8px;
+  background:rgba(0,229,255,0.08);border:1px solid rgba(0,229,255,0.25);
+  border-radius:50px;padding:6px 20px;
+  font-size:11px;font-weight:600;letter-spacing:2.5px;text-transform:uppercase;
+  color:var(--cyan);margin-bottom:2rem;
+  animation:fadeUp 0.8s ease both;
+}
+.hero-badge-dot{width:6px;height:6px;border-radius:50%;background:var(--cyan);animation:pulse 2s ease-in-out infinite;}
+@keyframes pulse{0%,100%{opacity:1;transform:scale(1);}50%{opacity:0.4;transform:scale(1.5);}}
+
+.hero h1{
+  font-family:var(--font-head);
+  font-size:clamp(2.8rem,7vw,6rem);
+  font-weight:800;line-height:1.0;
+  letter-spacing:-3px;
+  background:linear-gradient(135deg,#fff 20%,var(--cyan) 60%,var(--violet2) 100%);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+  animation:fadeUp 0.8s 0.15s ease both;
+  margin-bottom:1.5rem;
+}
+.hero-sub{
+  font-size:1.15rem;color:var(--muted);max-width:520px;margin:0 auto 2.5rem;
+  font-weight:300;line-height:1.7;
+  animation:fadeUp 0.8s 0.3s ease both;
+}
+.hero-cta{
+  display:inline-flex;align-items:center;gap:10px;
+  background:linear-gradient(135deg,var(--cyan2),var(--violet));
+  border:none;color:#fff;
+  font-family:var(--font-head);font-size:1rem;font-weight:700;
+  padding:1rem 2.5rem;border-radius:50px;cursor:pointer;
+  box-shadow:0 0 40px rgba(0,229,255,0.3);
+  transition:var(--trans);
+  animation:fadeUp 0.8s 0.45s ease both;
+  text-decoration:none;
+}
+.hero-cta:hover{transform:translateY(-3px) scale(1.03);box-shadow:0 0 60px rgba(0,229,255,0.45);}
+.hero-cta svg{width:18px;height:18px;}
+
+.hero-stats{
+  display:flex;gap:3rem;margin-top:4rem;justify-content:center;
+  animation:fadeUp 0.8s 0.6s ease both;
+}
+.stat{text-align:center;}
+.stat-num{font-family:var(--font-head);font-size:2rem;font-weight:800;color:var(--cyan);}
+.stat-label{font-size:0.75rem;color:var(--muted);text-transform:uppercase;letter-spacing:1px;}
+
+/* floating icons */
+.hero-floats{position:absolute;inset:0;pointer-events:none;}
+.float-icon{
+  position:absolute;background:var(--surface2);border:1px solid var(--border2);
+  backdrop-filter:blur(10px);border-radius:14px;
+  padding:10px 14px;font-size:1.4rem;
+  animation:floatAnim 5s ease-in-out infinite;
+}
+.float-icon:nth-child(1){top:15%;left:5%;animation-delay:0s;}
+.float-icon:nth-child(2){top:20%;right:6%;animation-delay:-1.5s;}
+.float-icon:nth-child(3){bottom:25%;left:3%;animation-delay:-3s;}
+.float-icon:nth-child(4){bottom:20%;right:4%;animation-delay:-2s;}
+.float-icon:nth-child(5){top:55%;left:8%;animation-delay:-0.8s;}
+@keyframes floatAnim{0%,100%{transform:translateY(0);}50%{transform:translateY(-14px);}}
+
+@keyframes fadeUp{from{opacity:0;transform:translateY(28px);}to{opacity:1;transform:translateY(0);}}
+
+/* ── SECTION SHARED ── */
+.section{padding:5rem 0;}
+.section-header{text-align:center;margin-bottom:3.5rem;}
+.section-eyebrow{
+  font-size:11px;font-weight:700;letter-spacing:3px;text-transform:uppercase;
+  color:var(--cyan);margin-bottom:1rem;opacity:0.85;
+  display:flex;align-items:center;justify-content:center;gap:8px;
+}
+.section-eyebrow::before,.section-eyebrow::after{content:'';flex:1;max-width:40px;height:1px;background:var(--cyan);opacity:0.4;}
+.section-title{font-family:var(--font-head);font-size:clamp(1.8rem,4vw,2.8rem);font-weight:800;letter-spacing:-1.5px;margin-bottom:0.75rem;}
+.section-sub{color:var(--muted);max-width:500px;margin:0 auto;font-weight:300;}
+
+/* ── GLASS CARD ── */
+.card{
+  background:var(--surface);
+  border:1px solid var(--border);
+  backdrop-filter:blur(20px);
+  border-radius:var(--r2);
+  padding:2rem;
+  transition:var(--trans);
+}
+.card:hover{border-color:var(--border2);}
+
+/* ── FORM ── */
+.form-section{background:linear-gradient(180deg,var(--bg) 0%,var(--bg2) 100%);}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px;}
+.form-group{display:flex;flex-direction:column;gap:8px;}
+.form-group.full{grid-column:1/-1;}
+.form-label{font-size:12px;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);}
+.form-input,.form-select{
+  background:var(--surface2);border:1px solid var(--border);
+  color:var(--text);font-family:var(--font-body);font-size:0.95rem;
+  border-radius:12px;padding:0.85rem 1.1rem;
+  outline:none;transition:border-color 0.3s,box-shadow 0.3s;
+  appearance:none;width:100%;
+}
+.form-input:focus,.form-select:focus{
+  border-color:rgba(0,229,255,0.4);
+  box-shadow:0 0 0 3px rgba(0,229,255,0.08);
+}
+.form-input::placeholder{color:var(--muted2);}
+.form-select option{background:#1a1f30;color:#fff;}
+
+/* Skill/Interest chips */
+.chips-wrap{display:flex;flex-wrap:wrap;gap:8px;margin-top:4px;}
+.chip{
+  background:var(--surface2);border:1px solid var(--border);
+  border-radius:50px;padding:6px 14px;
+  font-size:0.82rem;font-weight:500;cursor:pointer;
+  transition:all 0.25s cubic-bezier(0.34,1.56,0.64,1);
+  user-select:none;color:var(--muted);
+}
+.chip:hover{border-color:var(--cyan);color:var(--cyan);}
+.chip.active{
+  background:rgba(0,229,255,0.12);border-color:var(--cyan);
+  color:var(--cyan);
+  box-shadow:0 0 14px rgba(0,229,255,0.2);
+  transform:scale(1.05);
+}
+
+.predict-btn{
+  width:100%;padding:1.1rem;
+  background:linear-gradient(135deg,var(--cyan2) 0%,var(--violet) 100%);
+  border:none;color:#fff;
+  font-family:var(--font-head);font-size:1.05rem;font-weight:700;
+  border-radius:14px;cursor:pointer;
+  box-shadow:0 8px 32px rgba(0,229,255,0.25);
+  transition:var(--trans);margin-top:1.5rem;
+  letter-spacing:0.5px;
+}
+.predict-btn:hover{transform:translateY(-3px);box-shadow:0 16px 48px rgba(0,229,255,0.35);}
+.predict-btn:active{transform:scale(0.98);}
+.predict-btn:disabled{opacity:0.5;cursor:not-allowed;transform:none;}
+
+/* ── LOADING ── */
+.loading-overlay{
+  display:none;flex-direction:column;align-items:center;justify-content:center;
+  padding:4rem 2rem;gap:1.5rem;
+}
+.loading-overlay.show{display:flex;}
+.loader-ring{
+  width:64px;height:64px;border-radius:50%;
+  border:3px solid var(--border);
+  border-top-color:var(--cyan);
+  animation:spin 0.8s linear infinite;
+}
+@keyframes spin{to{transform:rotate(360deg);}}
+.loading-text{font-family:var(--font-head);font-size:1.1rem;color:var(--cyan);}
+.loading-steps{color:var(--muted);font-size:0.85rem;text-align:center;}
+
+/* ── RESULTS ── */
+.results-section{display:none;}
+.results-section.show{display:block;animation:fadeUp 0.7s ease both;}
+
+.role-cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px;margin-bottom:2rem;}
+.role-card{
+  background:var(--surface);border:1px solid var(--border);
+  backdrop-filter:blur(20px);border-radius:20px;
+  padding:1.5rem;cursor:pointer;
+  transition:var(--trans);position:relative;overflow:hidden;
+}
+.role-card::before{
+  content:'';position:absolute;inset:0;
+  background:linear-gradient(135deg,rgba(0,229,255,0.06),rgba(124,58,237,0.06));
+  opacity:0;transition:opacity 0.3s;
+}
+.role-card:hover::before,.role-card.selected::before{opacity:1;}
+.role-card:hover,.role-card.selected{
+  border-color:var(--cyan);
+  box-shadow:0 8px 32px rgba(0,229,255,0.18);
+  transform:translateY(-4px);
+}
+.role-card.selected{border-color:var(--cyan);}
+.role-icon{font-size:2.2rem;margin-bottom:0.75rem;display:block;}
+.role-name{font-family:var(--font-head);font-size:1.05rem;font-weight:700;margin-bottom:4px;}
+.role-match{
+  display:inline-flex;align-items:center;gap:6px;
+  font-size:0.78rem;font-weight:600;color:var(--emerald);
+}
+.match-bar{height:3px;border-radius:3px;background:var(--border);margin-top:8px;overflow:hidden;}
+.match-fill{height:100%;border-radius:3px;background:linear-gradient(90deg,var(--cyan),var(--violet2));transition:width 1.2s ease;}
+.role-salary{font-size:0.75rem;color:var(--muted);margin-top:6px;}
+.top-badge{
+  position:absolute;top:12px;right:12px;
+  background:rgba(0,229,255,0.15);border:1px solid rgba(0,229,255,0.3);
+  border-radius:50px;font-size:9px;font-weight:700;
+  letter-spacing:1px;text-transform:uppercase;color:var(--cyan);
+  padding:3px 8px;
+}
+
+/* skill gap */
+.gap-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:12px;}
+.gap-card{
+  background:var(--surface);border:1px solid var(--border);
+  border-radius:16px;padding:1.25rem;
+  transition:var(--trans);
+}
+.gap-card:hover{border-color:var(--violet2);transform:translateY(-3px);box-shadow:0 8px 24px rgba(124,58,237,0.15);}
+.gap-icon{font-size:1.5rem;margin-bottom:8px;}
+.gap-name{font-size:0.9rem;font-weight:600;margin-bottom:4px;}
+.gap-level{font-size:0.73rem;color:var(--muted);display:flex;align-items:center;gap:6px;}
+.gap-dots{display:flex;gap:3px;}
+.gap-dot{width:7px;height:7px;border-radius:50%;}
+.gap-dot.filled{background:var(--violet2);}
+.gap-dot.empty{background:var(--border);}
+
+/* roadmap */
+.roadmap{display:flex;flex-direction:column;gap:0;}
+.road-step{display:flex;gap:1.5rem;position:relative;}
+.road-step:not(:last-child)::before{
+  content:'';position:absolute;left:22px;top:48px;width:2px;
+  height:calc(100% - 8px);
+  background:linear-gradient(180deg,var(--cyan),var(--violet));
+  opacity:0.3;
+}
+.road-num{
+  flex-shrink:0;width:44px;height:44px;border-radius:50%;
+  background:linear-gradient(135deg,var(--cyan2),var(--violet));
+  display:flex;align-items:center;justify-content:center;
+  font-family:var(--font-head);font-size:0.9rem;font-weight:800;
+  box-shadow:0 0 20px rgba(0,229,255,0.25);
+  margin-top:4px;
+}
+.road-content{flex:1;padding-bottom:2rem;}
+.road-title{font-family:var(--font-head);font-size:1rem;font-weight:700;margin-bottom:4px;}
+.road-desc{font-size:0.85rem;color:var(--muted);}
+.road-tag{
+  display:inline-block;margin-top:8px;
+  background:rgba(0,229,255,0.08);border:1px solid rgba(0,229,255,0.2);
+  border-radius:50px;padding:3px 12px;font-size:0.72rem;font-weight:600;color:var(--cyan);
+}
+
+/* resume preview */
+.resume-wrap{
+  background:#fff;color:#111;
+  border-radius:20px;overflow:hidden;
+  box-shadow:0 32px 80px rgba(0,0,0,0.6);
+  max-width:750px;margin:0 auto;
+}
+.resume-header{
+  background:linear-gradient(135deg,#0c1445,#1e3a8a);
+  color:#fff;padding:2.5rem;
+}
+.resume-name{font-family:var(--font-head);font-size:2rem;font-weight:800;letter-spacing:-1px;margin-bottom:4px;}
+.resume-role-title{font-size:1rem;opacity:0.75;font-weight:300;}
+.resume-contact{display:flex;gap:1.5rem;margin-top:1rem;flex-wrap:wrap;font-size:0.8rem;opacity:0.7;}
+.resume-body{padding:2rem 2.5rem;display:grid;grid-template-columns:1fr 1.4fr;gap:2rem;}
+.resume-col-label{
+  font-size:10px;font-weight:800;letter-spacing:2.5px;text-transform:uppercase;
+  color:#0c1445;border-bottom:2px solid #0c1445;padding-bottom:6px;margin-bottom:12px;
+}
+.resume-skill-list{display:flex;flex-wrap:wrap;gap:6px;}
+.resume-skill-chip{
+  background:#e8eaf6;border-radius:50px;padding:4px 12px;
+  font-size:0.72rem;font-weight:600;color:#3730a3;
+}
+.resume-exp-item{margin-bottom:1rem;}
+.resume-exp-role{font-size:0.9rem;font-weight:700;}
+.resume-exp-company{font-size:0.78rem;color:#666;}
+.resume-exp-desc{font-size:0.78rem;color:#555;margin-top:4px;line-height:1.5;}
+.resume-target-box{
+  background:linear-gradient(135deg,#ede9fe,#dbeafe);
+  border-radius:12px;padding:1rem;grid-column:1/-1;
+  display:flex;align-items:center;gap:12px;
+}
+.resume-target-icon{font-size:1.5rem;}
+.resume-target-label{font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:#7c3aed;}
+.resume-target-text{font-size:0.9rem;font-weight:700;color:#3730a3;}
+
+.download-btn{
+  display:flex;align-items:center;justify-content:center;gap:10px;
+  background:linear-gradient(135deg,var(--emerald),#0891b2);
+  border:none;color:#fff;
+  font-family:var(--font-head);font-size:1rem;font-weight:700;
+  padding:1rem 2.5rem;border-radius:14px;cursor:pointer;
+  box-shadow:0 8px 32px rgba(16,185,129,0.3);
+  transition:var(--trans);margin:1.5rem auto 0;display:flex;width:fit-content;
+}
+.download-btn:hover{transform:translateY(-3px);box-shadow:0 16px 48px rgba(16,185,129,0.4);}
+
+/* Nav */
+.nav{
+  position:fixed;top:0;left:0;right:0;z-index:100;
+  padding:1rem 2rem;
+  display:flex;align-items:center;justify-content:space-between;
+  background:rgba(4,6,15,0.7);backdrop-filter:blur(20px);
+  border-bottom:1px solid var(--border);
+}
+.nav-logo{font-family:var(--font-head);font-size:1.1rem;font-weight:800;letter-spacing:-0.5px;}
+.nav-logo span{color:var(--cyan);}
+.nav-link{
+  font-size:0.85rem;font-weight:500;color:var(--muted);
+  background:none;border:none;cursor:pointer;
+  font-family:var(--font-body);
+  transition:color 0.2s;text-decoration:none;
+}
+.nav-link:hover{color:var(--cyan);}
+.nav-cta{
+  background:rgba(0,229,255,0.1);border:1px solid rgba(0,229,255,0.25);
+  border-radius:50px;padding:6px 18px;color:var(--cyan);
+  font-size:0.85rem;font-weight:600;cursor:pointer;
+  font-family:var(--font-body);transition:var(--trans);
+}
+.nav-cta:hover{background:rgba(0,229,255,0.2);}
+.nav-links{display:flex;align-items:center;gap:1.5rem;}
+
+/* divider */
+.grad-divider{height:1px;background:linear-gradient(90deg,transparent,var(--cyan),var(--violet),transparent);opacity:0.2;margin:0;}
+
+/* print */
+@media print{
+  body{background:#fff!important;color:#000!important;}
+  .nav,.hero,.form-section,.results-section:not(.print-target),.atm{display:none!important;}
+  .resume-wrap{box-shadow:none;max-width:100%;border-radius:0;}
+}
+
+@media(max-width:768px){
+  .form-grid{grid-template-columns:1fr;}
+  .form-group.full{grid-column:1;}
+  .hero-stats{gap:1.5rem;}
+  .resume-body{grid-template-columns:1fr;}
+  .nav-links .nav-link{display:none;}
+}
+
+.fade-in{opacity:0;transform:translateY(20px);transition:opacity 0.6s ease,transform 0.6s ease;}
+.fade-in.visible{opacity:1;transform:none;}
+</style>
+</head>
+<body>
+
+<div class="atm">
+  <div class="atm-orb a"></div>
+  <div class="atm-orb b"></div>
+  <div class="atm-orb c"></div>
+  <div class="atm-grid"></div>
+</div>
+
+<nav class="nav">
+  <div class="nav-logo">Future<span>Resume</span></div>
+  <div class="nav-links">
+    <a href="#predict" class="nav-link">Predict</a>
+    <a href="#results" class="nav-link" id="navResults" style="display:none">Results</a>
+    <button class="nav-cta" onclick="document.getElementById('predict').scrollIntoView({behavior:'smooth'})">Get Started →</button>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero" id="hero">
+  <div class="hero-floats">
+    <div class="float-icon">📊</div>
+    <div class="float-icon">🚀</div>
+    <div class="float-icon">💻</div>
+    <div class="float-icon">🎯</div>
+    <div class="float-icon">📈</div>
+  </div>
+  <div class="hero-badge"><div class="hero-badge-dot"></div>AI-Powered Career Intelligence</div>
+  <h1>Predict Your<br>Future Career</h1>
+  <p class="hero-sub">Enter your skills and interests — our AI engine maps your unique potential to tomorrow's highest-demand roles.</p>
+  <a href="#predict" class="hero-cta">
+    Start Predicting
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+  </a>
+  <div class="hero-stats">
+    <div class="stat"><div class="stat-num">50+</div><div class="stat-label">Career Roles</div></div>
+    <div class="stat"><div class="stat-num">98%</div><div class="stat-label">Accuracy Rate</div></div>
+    <div class="stat"><div class="stat-num">10K+</div><div class="stat-label">Students Guided</div></div>
+  </div>
+</section>
+
+<div class="grad-divider"></div>
+
+<!-- FORM -->
+<section class="section form-section" id="predict">
+<div class="wrap">
+  <div class="section-header fade-in">
+    <div class="section-eyebrow">Step 01</div>
+    <h2 class="section-title">Tell us about yourself</h2>
+    <p class="section-sub">Fill in your details and our AI will craft your personalized career prediction.</p>
+  </div>
+
+  <div class="card fade-in">
+    <div class="form-grid">
+      <div class="form-group">
+        <label class="form-label">Full Name</label>
+        <input class="form-input" type="text" id="inp-name" placeholder="Alex Johnson">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Email</label>
+        <input class="form-input" type="email" id="inp-email" placeholder="alex@email.com">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Education Level</label>
+        <select class="form-select" id="inp-edu">
+          <option value="">Select education…</option>
+          <option>High School Diploma</option>
+          <option>Associate's Degree</option>
+          <option>Bachelor's Degree</option>
+          <option>Master's Degree</option>
+          <option>PhD / Doctorate</option>
+          <option>Bootcamp Graduate</option>
+          <option>Self-Taught</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Field of Study</label>
+        <input class="form-input" type="text" id="inp-field" placeholder="Computer Science">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Experience Level</label>
+        <select class="form-select" id="inp-exp">
+          <option value="">Select level…</option>
+          <option>Student / No Experience</option>
+          <option>0–1 Year</option>
+          <option>1–3 Years</option>
+          <option>3–5 Years</option>
+          <option>5+ Years</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Certifications</label>
+        <input class="form-input" type="text" id="inp-cert" placeholder="AWS, Google Cloud, CompTIA…">
+      </div>
+
+      <div class="form-group full">
+        <label class="form-label">Technical Skills <span style="color:var(--muted);font-size:10px;letter-spacing:0;">(select all that apply)</span></label>
+        <div class="chips-wrap" id="skillChips"></div>
+      </div>
+
+      <div class="form-group full">
+        <label class="form-label">Career Interests <span style="color:var(--muted);font-size:10px;letter-spacing:0;">(pick your passions)</span></label>
+        <div class="chips-wrap" id="interestChips"></div>
+      </div>
+    </div>
+
+    <div class="loading-overlay" id="loadingOverlay">
+      <div class="loader-ring"></div>
+      <div class="loading-text" id="loadingText">Initializing AI Engine…</div>
+      <div class="loading-steps" id="loadingStep">Scanning skill matrix…</div>
+    </div>
+
+    <button class="predict-btn" id="predictBtn" onclick="runPrediction()">
+      ✦ Predict My Future Role
+    </button>
+  </div>
+</div>
+</section>
+
+<div class="grad-divider"></div>
+
+<!-- RESULTS -->
+<section class="section results-section" id="results">
+<div class="wrap">
+
+  <div class="section-header">
+    <div class="section-eyebrow">AI Prediction Complete</div>
+    <h2 class="section-title">Your Career Matches</h2>
+    <p class="section-sub">Based on your skill profile, here are your strongest career pathways.</p>
+  </div>
+
+  <div class="role-cards" id="roleCards"></div>
+
+  <div class="grad-divider" style="margin:3rem 0;"></div>
+
+  <!-- SKILL GAP -->
+  <div class="section-header">
+    <div class="section-eyebrow">Step 03</div>
+    <h2 class="section-title">Skills to Learn Next</h2>
+    <p class="section-sub">Bridge the gap between where you are and where you want to be.</p>
+  </div>
+  <div class="gap-grid" id="gapGrid"></div>
+
+  <div class="grad-divider" style="margin:3rem 0;"></div>
+
+  <!-- ROADMAP -->
+  <div class="section-header">
+    <div class="section-eyebrow">Step 04</div>
+    <h2 class="section-title">Your Career Roadmap</h2>
+    <p class="section-sub">A step-by-step plan to reach your target role.</p>
+  </div>
+  <div class="card">
+    <div class="roadmap" id="roadmap"></div>
+  </div>
+
+  <div class="grad-divider" style="margin:3rem 0;"></div>
+
+  <!-- RESUME PREVIEW -->
+  <div class="section-header">
+    <div class="section-eyebrow">Step 05</div>
+    <h2 class="section-title">Future Resume Preview</h2>
+    <p class="section-sub">A professional resume snapshot based on your predicted career path.</p>
+  </div>
+
+  <div class="resume-wrap" id="resumePreview"></div>
+
+  <div style="text-align:center;">
+    <button class="download-btn" onclick="downloadResume()">
+      ⬇ Download Resume PDF
+    </button>
+  </div>
+
+</div>
+</section>
+
+<script>
+const SKILLS = ['Python','JavaScript','React','Node.js','Java','C++','SQL','MongoDB','Machine Learning','Deep Learning','TensorFlow','PyTorch','AWS','Azure','Docker','Kubernetes','Cybersecurity','Networking','Linux','Git','Flutter','Swift','Kotlin','Figma','Data Analysis','Statistics','Tableau','Power BI','REST APIs','GraphQL'];
+const INTERESTS = ['Artificial Intelligence','Web Development','Mobile Apps','Cloud Computing','Data Science','Cybersecurity','Game Development','Blockchain','DevOps','UI/UX Design','Robotics','Entrepreneurship','Open Source','Research','Fintech'];
+
+const CAREER_DB = {
+  'Data Scientist':     { icon:'🔬', match:94, salary:'$105K–$145K/yr', gap:['Pandas','Statistics','ML Models','Data Viz','Scikit-learn','Feature Engineering'], trigger:['Python','Machine Learning','Data Analysis','Statistics','TensorFlow'] },
+  'Frontend Developer': { icon:'🎨', match:91, salary:'$80K–$120K/yr',  gap:['TypeScript','Next.js','Testing','Web Perf','Accessibility','Design Systems'], trigger:['React','JavaScript','Figma','UI/UX Design'] },
+  'Software Engineer':  { icon:'⚙️', match:88, salary:'$95K–$135K/yr',  gap:['System Design','CI/CD','Microservices','Load Testing','Code Review'], trigger:['Java','Python','C++','Git','REST APIs'] },
+  'ML Engineer':        { icon:'🤖', match:90, salary:'$115K–$155K/yr', gap:['MLOps','Model Serving','A/B Testing','Kubeflow','Feature Stores'], trigger:['Machine Learning','Deep Learning','Python','TensorFlow','PyTorch'] },
+  'Cloud Architect':    { icon:'☁️', match:86, salary:'$120K–$160K/yr', gap:['Terraform','Cost Optimization','Multi-cloud','Security Architecture','SRE'], trigger:['AWS','Azure','Docker','Kubernetes','Linux'] },
+  'Cybersecurity Analyst':{ icon:'🛡', match:89, salary:'$90K–$130K/yr', gap:['Ethical Hacking','SIEM','Incident Response','Threat Modelling','Forensics'], trigger:['Cybersecurity','Networking','Linux'] },
+  'Mobile Developer':   { icon:'📱', match:85, salary:'$85K–$125K/yr',  gap:['CI/CD Mobile','App Store Optimization','Animations','State Management','Testing'], trigger:['Flutter','Swift','Kotlin','Mobile Apps'] },
+  'Data Engineer':      { icon:'🗄', match:87, salary:'$100K–$140K/yr', gap:['Apache Spark','Kafka','Data Pipelines','dbt','Airflow'], trigger:['SQL','Python','MongoDB','Data Analysis','AWS'] },
+  'Full Stack Developer':{ icon:'🔗', match:88, salary:'$90K–$130K/yr', gap:['System Design','Auth Flows','DB Optimization','Caching','Deployment'], trigger:['React','Node.js','SQL','REST APIs','MongoDB'] },
+  'DevOps Engineer':    { icon:'🔄', match:85, salary:'$100K–$140K/yr', gap:['GitOps','Monitoring','Chaos Engineering','Service Mesh','FinOps'], trigger:['Docker','Kubernetes','Linux','AWS','Git'] },
+};
+
+const ROADMAP_STEPS = [
+  { title:'Strengthen Core Skills', desc:'Deep-dive into 2–3 foundational technologies for your chosen role. Build confidence through deliberate practice.', tag:'Months 1–2' },
+  { title:'Build Real Projects', desc:'Create 3–5 portfolio projects that solve real problems. Open-source contributions boost your credibility fast.', tag:'Months 3–5' },
+  { title:'Craft Your Portfolio', desc:'Launch a personal portfolio site. Document your projects with clear case studies and measurable outcomes.', tag:'Month 6' },
+  { title:'Land an Internship', desc:'Apply to internships and junior roles. Leverage LinkedIn, GitHub, and career fairs to get in front of hiring managers.', tag:'Months 7–9' },
+  { title:'Full-Time Role & Growth', desc:'Convert your internship or secure a full-time position. Set 90-day goals, find a mentor, and keep leveling up.', tag:'Month 10+' },
+];
+
+function initChips() {
+  const sc = document.getElementById('skillChips');
+  const ic = document.getElementById('interestChips');
+  SKILLS.forEach(s => sc.appendChild(makeChip(s, 'skill')));
+  INTERESTS.forEach(i => ic.appendChild(makeChip(i, 'interest')));
+}
+
+function makeChip(label, type) {
+  const d = document.createElement('div');
+  d.className = 'chip'; d.textContent = label; d.dataset.type = type;
+  d.addEventListener('click', () => d.classList.toggle('active'));
+  return d;
+}
+
+function getSelected(type) {
+  return [...document.querySelectorAll(`.chip[data-type="${type}"].active`)].map(c => c.textContent);
+}
+
+function runPrediction() {
+  const name = document.getElementById('inp-name').value.trim();
+  if (!name) { alert('Please enter your name to continue.'); return; }
+
+  const btn = document.getElementById('predictBtn');
+  const overlay = document.getElementById('loadingOverlay');
+  btn.style.display = 'none';
+  overlay.classList.add('show');
+
+  const steps = ['Scanning skill matrix…','Analyzing interest patterns…','Mapping to career graph…','Calculating match scores…','Generating roadmap…','Building your resume…'];
+  let i = 0;
+  const iv = setInterval(() => {
+    document.getElementById('loadingStep').textContent = steps[i % steps.length];
+    document.getElementById('loadingText').textContent = i < 3 ? 'AI Engine Working…' : i < 5 ? 'Almost Ready…' : 'Finalizing Results…';
+    i++;
+  }, 600);
+
+  setTimeout(() => {
+    clearInterval(iv);
+    overlay.classList.remove('show');
+    btn.style.display = 'block';
+    showResults();
+  }, 4000);
+}
+
+function showResults() {
+  const skills = getSelected('skill');
+  const interests = getSelected('interest');
+  const name = document.getElementById('inp-name').value.trim() || 'Student';
+  const edu = document.getElementById('inp-edu').value || 'Bachelor\'s Degree';
+  const field = document.getElementById('inp-field').value.trim() || 'Computer Science';
+  const exp = document.getElementById('inp-exp').value || 'Student / No Experience';
+  const cert = document.getElementById('inp-cert').value.trim() || '';
+
+  // Score careers
+  const scored = Object.entries(CAREER_DB).map(([role, data]) => {
+    let score = data.match;
+    data.trigger.forEach(t => { if (skills.includes(t) || interests.includes(t)) score += 2; });
+    return { role, ...data, score: Math.min(99, score) };
+  }).sort((a,b) => b.score - a.score).slice(0, 4);
+
+  renderRoles(scored);
+  renderGap(scored[0]);
+  renderRoadmap();
+  renderResume(name, edu, field, skills, cert, scored[0].role, interests);
+
+  const rs = document.getElementById('results');
+  rs.classList.add('show');
+  document.getElementById('navResults').style.display = 'block';
+  setTimeout(() => rs.scrollIntoView({ behavior:'smooth', block:'start' }), 100);
+}
+
+function renderRoles(roles) {
+  const g = document.getElementById('roleCards');
+  g.innerHTML = '';
+  roles.forEach((r, i) => {
+    const card = document.createElement('div');
+    card.className = 'role-card' + (i===0?' selected':'');
+    card.innerHTML = `
+      ${i===0?'<div class="top-badge">Best Match</div>':''}
+      <span class="role-icon">${r.icon}</span>
+      <div class="role-name">${r.role}</div>
+      <div class="role-match">✦ ${r.score}% Match</div>
+      <div class="match-bar"><div class="match-fill" style="width:0%" data-w="${r.score}%"></div></div>
+      <div class="role-salary">${r.salary}</div>`;
+    card.style.opacity='0'; card.style.transform='translateY(20px)';
+    g.appendChild(card);
+    setTimeout(()=>{ card.style.transition='all 0.5s ease'; card.style.opacity='1'; card.style.transform='none'; },i*120);
+    setTimeout(()=>{ card.querySelector('.match-fill').style.width=r.score+'%'; }, i*120+400);
+    card.addEventListener('click', ()=>{ document.querySelectorAll('.role-card').forEach(c=>c.classList.remove('selected')); card.classList.add('selected'); });
+  });
+}
+
+function renderGap(topRole) {
+  const g = document.getElementById('gapGrid');
+  g.innerHTML = '';
+  const icons = ['📚','⚡','🧠','📊','🔧','🎯'];
+  const levels = [[3,2],[2,3],[1,4],[3,2],[2,3],[1,4]];
+  topRole.gap.forEach((skill, i) => {
+    const card = document.createElement('div');
+    card.className = 'gap-card';
+    card.style.opacity='0'; card.style.transform='translateY(16px)';
+    const [f,e] = levels[i % levels.length];
+    const dots = Array.from({length:5},(_,di)=>`<div class="gap-dot ${di<f?'filled':'empty'}"></div>`).join('');
+    card.innerHTML = `<div class="gap-icon">${icons[i%icons.length]}</div><div class="gap-name">${skill}</div><div class="gap-level"><div class="gap-dots">${dots}</div> ${['Beginner','Beginner','Intermediate','Intermediate','Advanced','Advanced'][i%6]}</div>`;
+    g.appendChild(card);
+    setTimeout(()=>{ card.style.transition='all 0.5s ease'; card.style.opacity='1'; card.style.transform='none'; }, i*100);
+  });
+}
+
+function renderRoadmap() {
+  const rm = document.getElementById('roadmap');
+  rm.innerHTML = '';
+  ROADMAP_STEPS.forEach((step, i) => {
+    const div = document.createElement('div');
+    div.className = 'road-step';
+    div.innerHTML = `<div class="road-num">${i+1}</div><div class="road-content"><div class="road-title">${step.title}</div><div class="road-desc">${step.desc}</div><span class="road-tag">${step.tag}</span></div>`;
+    rm.appendChild(div);
+  });
+}
+
+function renderResume(name, edu, field, skills, cert, role, interests) {
+  const skillsList = skills.length ? skills : ['JavaScript','Python','SQL'];
+  const certList = cert || 'None listed';
+  const interestStr = interests.length ? interests.slice(0,2).join(', ') : 'Technology, Innovation';
+
+  document.getElementById('resumePreview').innerHTML = `
+    <div class="resume-header">
+      <div class="resume-name">${name}</div>
+      <div class="resume-role-title">${role} · Career Candidate</div>
+      <div class="resume-contact">
+        <span>📧 ${document.getElementById('inp-email').value || name.toLowerCase().replace(/\s/g,'.')+'@email.com'}</span>
+        <span>🎓 ${edu} in ${field}</span>
+        <span>📍 Open to Opportunities</span>
+      </div>
+    </div>
+    <div class="resume-body">
+      <div>
+        <div class="resume-col-label">Skills</div>
+        <div class="resume-skill-list">${skillsList.map(s=>`<span class="resume-skill-chip">${s}</span>`).join('')}</div>
+        <br>
+        <div class="resume-col-label">Certifications</div>
+        <p style="font-size:0.82rem;color:#444;line-height:1.6;">${certList}</p>
+        <br>
+        <div class="resume-col-label">Interests</div>
+        <p style="font-size:0.82rem;color:#444;">${interestStr}</p>
+      </div>
+      <div>
+        <div class="resume-col-label">Experience</div>
+        <div class="resume-exp-item">
+          <div class="resume-exp-role">Student Developer</div>
+          <div class="resume-exp-company">Academic Projects · 2022–Present</div>
+          <div class="resume-exp-desc">Built multiple full-stack applications and contributed to open-source repositories. Demonstrated strong analytical and problem-solving skills through coursework and independent projects.</div>
+        </div>
+        <div class="resume-exp-item">
+          <div class="resume-exp-role">Freelance / Personal Projects</div>
+          <div class="resume-exp-company">Self-Directed · 2021–Present</div>
+          <div class="resume-exp-desc">Developed and deployed personal projects exploring ${skillsList.slice(0,2).join(' and ')} technologies. Actively maintaining a GitHub portfolio with 10+ repositories.</div>
+        </div>
+        <div class="resume-col-label" style="margin-top:1rem;">Education</div>
+        <div class="resume-exp-item">
+          <div class="resume-exp-role">${edu} — ${field}</div>
+          <div class="resume-exp-company">University · Expected 2025</div>
+        </div>
+      </div>
+      <div class="resume-target-box">
+        <div class="resume-target-icon">🎯</div>
+        <div>
+          <div class="resume-target-label">AI-Predicted Career Target</div>
+          <div class="resume-target-text">${role} — High-Demand Role | Estimated Salary: ${CAREER_DB[role]?.salary || '$90K–$130K/yr'}</div>
+        </div>
+      </div>
+    </div>`;
+}
+
+function downloadResume() {
+  const resume = document.getElementById('resumePreview');
+  const originalBody = document.body.innerHTML;
+  const printContent = resume.outerHTML;
+  const win = window.open('','_blank');
+  win.document.write(`<!DOCTYPE html><html><head><title>Future Resume</title>
+    <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+    <style>
+      body{margin:0;padding:0;font-family:'DM Sans',sans-serif;background:#f5f5f5;}
+      .resume-wrap{max-width:800px;margin:2rem auto;background:#fff;border-radius:16px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,0.1);}
+      .resume-header{background:linear-gradient(135deg,#0c1445,#1e3a8a);color:#fff;padding:2.5rem;}
+      .resume-name{font-family:'Syne',sans-serif;font-size:2rem;font-weight:800;margin-bottom:4px;}
+      .resume-role-title{font-size:1rem;opacity:0.75;}
+      .resume-contact{display:flex;gap:1.5rem;margin-top:1rem;font-size:0.8rem;opacity:0.7;flex-wrap:wrap;}
+      .resume-body{padding:2rem 2.5rem;display:grid;grid-template-columns:1fr 1.4fr;gap:2rem;}
+      .resume-col-label{font-size:10px;font-weight:800;letter-spacing:2.5px;text-transform:uppercase;color:#0c1445;border-bottom:2px solid #0c1445;padding-bottom:6px;margin-bottom:12px;}
+      .resume-skill-list{display:flex;flex-wrap:wrap;gap:6px;}
+      .resume-skill-chip{background:#e8eaf6;border-radius:50px;padding:4px 12px;font-size:0.72rem;font-weight:600;color:#3730a3;}
+      .resume-exp-item{margin-bottom:1rem;}
+      .resume-exp-role{font-size:0.9rem;font-weight:700;}
+      .resume-exp-company{font-size:0.78rem;color:#666;}
+      .resume-exp-desc{font-size:0.78rem;color:#555;margin-top:4px;line-height:1.5;}
+      .resume-target-box{background:linear-gradient(135deg,#ede9fe,#dbeafe);border-radius:12px;padding:1rem;grid-column:1/-1;display:flex;align-items:center;gap:12px;}
+      .resume-target-label{font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:#7c3aed;}
+      .resume-target-text{font-size:0.9rem;font-weight:700;color:#3730a3;}
+    </style>
+  </head><body>${printContent}</body></html>`);
+  win.document.close();
+  setTimeout(() => { win.print(); }, 800);
+}
+
+// Intersection Observer for fade-ins
+const observer = new IntersectionObserver(entries => {
+  entries.forEach(e => { if(e.isIntersecting) e.target.classList.add('visible'); });
+}, { threshold: 0.1 });
+document.querySelectorAll('.fade-in').forEach(el => observer.observe(el));
+
+initChips();
+</script>
+</body>
+</html>
