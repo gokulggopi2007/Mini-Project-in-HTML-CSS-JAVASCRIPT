@@ -1,0 +1,429 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Quiz System</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: #f0f2ff;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 2rem 1rem;
+    }
+
+    .quiz-container {
+      background: #ffffff;
+      border-radius: 16px;
+      box-shadow: 0 8px 32px rgba(83, 74, 183, 0.12);
+      padding: 2rem;
+      width: 100%;
+      max-width: 660px;
+    }
+
+    /* Header */
+    .quiz-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 1.5rem;
+    }
+
+    .quiz-title {
+      font-size: 20px;
+      font-weight: 700;
+      color: #534AB7;
+      letter-spacing: 0.5px;
+    }
+
+    .score-badge {
+      background: #EEEDFE;
+      color: #534AB7;
+      font-size: 13px;
+      font-weight: 600;
+      padding: 4px 14px;
+      border-radius: 99px;
+    }
+
+    /* Progress */
+    .progress-label {
+      display: flex;
+      justify-content: space-between;
+      font-size: 13px;
+      color: #888;
+      margin-bottom: 6px;
+    }
+
+    .progress-track {
+      height: 8px;
+      background: #EEEDFE;
+      border-radius: 99px;
+      margin-bottom: 1.75rem;
+      overflow: hidden;
+    }
+
+    .progress-fill {
+      height: 8px;
+      background: linear-gradient(90deg, #534AB7, #7F77DD);
+      border-radius: 99px;
+      transition: width 0.4s ease;
+    }
+
+    /* Question card */
+    .question-card {
+      background: #fafafa;
+      border: 1px solid #e8e6f8;
+      border-radius: 12px;
+      padding: 1.5rem;
+      margin-bottom: 1.25rem;
+    }
+
+    .q-meta {
+      font-size: 12px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      color: #7F77DD;
+      margin-bottom: 0.6rem;
+    }
+
+    .q-text {
+      font-size: 18px;
+      font-weight: 600;
+      color: #1e1b3a;
+      line-height: 1.5;
+    }
+
+    /* Options */
+    .options-list {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      margin-bottom: 1rem;
+    }
+
+    .option-btn {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      width: 100%;
+      padding: 0.8rem 1rem;
+      background: #ffffff;
+      border: 1.5px solid #e0ddf5;
+      border-radius: 10px;
+      cursor: pointer;
+      text-align: left;
+      font-size: 15px;
+      color: #2d2b4e;
+      font-family: inherit;
+      transition: background 0.15s, border-color 0.15s, transform 0.1s;
+    }
+
+    .option-btn:hover:not(:disabled) {
+      background: #f4f2ff;
+      border-color: #AFA9EC;
+      transform: translateX(3px);
+    }
+
+    .option-btn:disabled { cursor: default; }
+
+    .badge {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background: #EEEDFE;
+      color: #534AB7;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 13px;
+      font-weight: 700;
+      flex-shrink: 0;
+      transition: background 0.2s, color 0.2s;
+    }
+
+    /* States */
+    .option-btn.correct {
+      background: #EAF3DE;
+      border-color: #639922;
+    }
+    .option-btn.correct .badge {
+      background: #639922;
+      color: #ffffff;
+    }
+
+    .option-btn.wrong {
+      background: #FCEBEB;
+      border-color: #A32D2D;
+    }
+    .option-btn.wrong .badge {
+      background: #A32D2D;
+      color: #ffffff;
+    }
+
+    .option-btn.reveal-correct {
+      background: #EAF3DE;
+      border-color: #639922;
+    }
+    .option-btn.reveal-correct .badge {
+      background: #639922;
+      color: #ffffff;
+    }
+
+    /* Feedback */
+    .feedback {
+      font-size: 14px;
+      font-weight: 500;
+      padding: 0.65rem 1rem;
+      border-radius: 8px;
+      margin-top: 0.75rem;
+    }
+    .feedback.correct { background: #EAF3DE; color: #3B6D11; }
+    .feedback.wrong   { background: #FCEBEB; color: #791F1F; }
+
+    /* Next button */
+    .next-btn {
+      display: inline-block;
+      margin-top: 1rem;
+      padding: 0.65rem 1.75rem;
+      background: #534AB7;
+      color: #ffffff;
+      border: none;
+      border-radius: 8px;
+      font-size: 15px;
+      font-weight: 600;
+      font-family: inherit;
+      cursor: pointer;
+      transition: background 0.2s, transform 0.1s;
+    }
+    .next-btn:hover { background: #3C3489; transform: translateY(-1px); }
+    .next-btn:active { transform: translateY(0); }
+
+    /* ===== RESULT SCREEN ===== */
+    .result-screen { text-align: center; }
+
+    .score-ring {
+      width: 120px;
+      height: 120px;
+      border-radius: 50%;
+      border: 5px solid #534AB7;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 1.5rem;
+      background: #EEEDFE;
+    }
+
+    .score-num  { font-size: 34px; font-weight: 700; color: #534AB7; line-height: 1; }
+    .score-denom{ font-size: 14px; color: #7F77DD; margin-top: 2px; }
+
+    .result-title {
+      font-size: 22px;
+      font-weight: 700;
+      color: #1e1b3a;
+      margin-bottom: 0.4rem;
+    }
+
+    .result-sub {
+      font-size: 15px;
+      color: #666;
+      margin-bottom: 1.75rem;
+    }
+
+    .summary-box {
+      background: #fafafa;
+      border: 1px solid #e8e6f8;
+      border-radius: 12px;
+      padding: 1rem 1.25rem;
+      text-align: left;
+      margin-bottom: 1.5rem;
+    }
+
+    .summary-title {
+      font-size: 13px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      color: #7F77DD;
+      margin-bottom: 0.75rem;
+    }
+
+    .summary-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 14px;
+      color: #2d2b4e;
+      padding: 0.5rem 0;
+      border-bottom: 1px solid #eee;
+      gap: 12px;
+    }
+    .summary-row:last-child { border-bottom: none; }
+    .summary-row span:first-child { flex: 1; }
+
+    .tag {
+      font-size: 12px;
+      font-weight: 600;
+      padding: 3px 12px;
+      border-radius: 99px;
+      flex-shrink: 0;
+    }
+    .tag.ok { background: #EAF3DE; color: #3B6D11; }
+    .tag.no { background: #FCEBEB; color: #A32D2D; }
+
+    .restart-btn {
+      padding: 0.7rem 2.5rem;
+      background: #534AB7;
+      color: #ffffff;
+      border: none;
+      border-radius: 8px;
+      font-size: 16px;
+      font-weight: 600;
+      font-family: inherit;
+      cursor: pointer;
+      transition: background 0.2s, transform 0.1s;
+    }
+    .restart-btn:hover { background: #3C3489; transform: translateY(-1px); }
+
+    @media (max-width: 480px) {
+      .quiz-container { padding: 1.25rem; }
+      .q-text { font-size: 16px; }
+      .option-btn { font-size: 14px; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="quiz-container" id="app"></div>
+
+<script>
+  const questions = [
+    { q: "What is the capital of India?",
+      opts: ["Mumbai", "Delhi", "Chennai", "Kolkata"], ans: 1 },
+    { q: "C programming is classified as which level of language?",
+      opts: ["High-level", "Assembly", "Machine", "Middle-level"], ans: 3 },
+    { q: "Which is the largest planet in our solar system?",
+      opts: ["Earth", "Mars", "Jupiter", "Venus"], ans: 2 },
+    { q: "Who is the father of the C programming language?",
+      opts: ["James Gosling", "Dennis Ritchie", "Bjarne Stroustrup", "Guido van Rossum"], ans: 1 },
+    { q: "Which data structure follows the FIFO principle?",
+      opts: ["Stack", "Queue", "Tree", "Graph"], ans: 1 }
+  ];
+
+  const labels = ["A", "B", "C", "D"];
+  let current = 0, score = 0, answered = false, userAnswers = [];
+
+  function getMessage(s) {
+    if (s === 5) return "Perfect Score!";
+    if (s >= 4) return "Excellent Work!";
+    if (s >= 3) return "Good Effort!";
+    if (s >= 2) return "Keep Practicing!";
+    return "Better Luck Next Time!";
+  }
+
+  function render() {
+    document.getElementById("app").innerHTML =
+      current < questions.length ? buildQuiz() : buildResult();
+  }
+
+  function buildQuiz() {
+    const q = questions[current];
+    const pct = (current / questions.length) * 100;
+    return `
+      <div class="quiz-header">
+        <span class="quiz-title">&#9670; Quiz System</span>
+        <span class="score-badge">Score: ${score}</span>
+      </div>
+      <div class="progress-label">
+        <span>Question ${current + 1} of ${questions.length}</span>
+        <span>${Math.round(pct)}%</span>
+      </div>
+      <div class="progress-track">
+        <div class="progress-fill" style="width:${pct}%"></div>
+      </div>
+      <div class="question-card">
+        <div class="q-meta">Question ${current + 1}</div>
+        <div class="q-text">${q.q}</div>
+      </div>
+      <div class="options-list">
+        ${q.opts.map((o, i) => `
+          <button class="option-btn" id="opt${i}" onclick="choose(${i})">
+            <span class="badge" id="badge${i}">${labels[i]}</span>
+            <span>${o}</span>
+          </button>`).join("")}
+      </div>
+      <div id="feedback"></div>
+      <div id="next-area"></div>`;
+  }
+
+  function choose(idx) {
+    if (answered) return;
+    answered = true;
+    const q = questions[current];
+    const correct = idx === q.ans;
+    if (correct) score++;
+    userAnswers.push({ chosen: idx, correct: q.ans });
+
+    for (let i = 0; i < 4; i++) {
+      const btn = document.getElementById("opt" + i);
+      btn.disabled = true;
+      if (i === q.ans && i !== idx) btn.classList.add("reveal-correct");
+    }
+    document.getElementById("opt" + idx).classList.add(correct ? "correct" : "wrong");
+
+    document.getElementById("feedback").innerHTML = correct
+      ? `<div class="feedback correct">&#10003; Correct! Well done.</div>`
+      : `<div class="feedback wrong">&#10007; Wrong! Correct answer: <strong>${labels[q.ans]}. ${q.opts[q.ans]}</strong></div>`;
+
+    const label = current < questions.length - 1 ? "Next Question &rarr;" : "See Results &rarr;";
+    document.getElementById("next-area").innerHTML =
+      `<button class="next-btn" onclick="nextQ()">${label}</button>`;
+  }
+
+  function nextQ() {
+    current++;
+    answered = false;
+    render();
+  }
+
+  function buildResult() {
+    const pct = Math.round((score / questions.length) * 100);
+    const rows = questions.map((q, i) => {
+      const ok = userAnswers[i].chosen === userAnswers[i].correct;
+      return `<div class="summary-row">
+        <span>${q.q}</span>
+        <span class="tag ${ok ? 'ok' : 'no'}">${ok ? "Correct" : "Wrong"}</span>
+      </div>`;
+    }).join("");
+
+    return `
+      <div class="result-screen">
+        <div class="score-ring">
+          <span class="score-num">${score}</span>
+          <span class="score-denom">/ ${questions.length}</span>
+        </div>
+        <div class="result-title">${getMessage(score)}</div>
+        <div class="result-sub">You scored <strong>${pct}%</strong> &mdash; ${score} out of ${questions.length} correct.</div>
+        <div class="summary-box">
+          <div class="summary-title">Answer Summary</div>
+          ${rows}
+        </div>
+        <button class="restart-btn" onclick="restart()">&#8635; Restart Quiz</button>
+      </div>`;
+  }
+
+  function restart() {
+    current = 0; score = 0; answered = false; userAnswers = [];
+    render();
+  }
+
+  render();
+</script>
+</body>
+</html>
